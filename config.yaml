@@ -1,0 +1,50 @@
+# === Meat QC Pipeline Configuration ===
+
+camera:
+  source: 0                      # 0 = default webcam, or RTSP/HTTP URL, or video file path
+  frame_width: 1280
+  frame_height: 720
+  fps_limit: 15                  # throttle inference rate; raise if your GPU allows
+
+detector:
+  weights: "models/yolo_meat_detector.pt"   # trained with scripts/train_yolo.py
+  confidence_threshold: 0.45     # minimum detector confidence to accept a box
+  iou_threshold: 0.45
+  device: "cuda"                  # "cuda" or "cpu" — switch to "cuda" if you have a GPU
+  target_class: "meat"           # class name in your YOLO dataset.yaml
+
+freshness_classifier:
+  weights: "models/freshness_classifier.pt" # trained with scripts/train_classifier.py
+  input_size: 224
+  device: "cuda"                  # "cuda" or "cpu"
+  # Discard threshold: below this "good" confidence, treat the piece as spoiled.
+  good_confidence_threshold: 0.60
+  class_names: ["good", "spoiled"]  # index 0 = good, index 1 = spoiled
+
+size_classifier:
+  # Pixel-to-millimeter calibration. Measure a known reference object (e.g. a
+  # 100mm calibration card) at the same camera height/distance as production,
+  # then set this to (reference_object_width_px / reference_object_width_mm).
+  pixels_per_mm: 4.2
+  # A piece is "big" if its longest bounding-box dimension (in mm) exceeds this.
+  size_threshold_mm: 120
+
+tracking:
+  # Simple centroid tracker so the same physical piece isn't processed twice
+  # as it crosses multiple frames on the belt.
+  max_disappeared_frames: 10
+  max_match_distance_px: 75
+
+routing:
+  # "console" just logs decisions (safe default for development/testing).
+  # "gpio" / "serial" / "mqtt" are stubs to fill in for your actual PLC/relay setup.
+  backend: "console"
+  serial_port: "/dev/ttyUSB0"
+  serial_baud: 9600
+  mqtt_broker: "localhost"
+  mqtt_topic: "meat_qc/routing"
+
+output:
+  save_annotated_frames: true
+  output_dir: "output/annotated_frames"
+  log_csv: "output/decisions_log.csv"

@@ -1,0 +1,23 @@
+# Environments
+venv/
+env/
+.env
+
+# Python
+__pycache__/
+*.pyc
+
+# Data and Outputs (Too large for git)
+data/
+output/
+archive*
+*.zip
+
+# Ignore all models except the best trained freshness classifier
+models/*
+!models/freshness_classifier.pt
+!models/.gitkeep
+
+# IDEs
+.vscode/
+.idea/
