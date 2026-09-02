@@ -48,29 +48,9 @@ Place a standard **credit / debit / ID card** (85.60 mm wide) flat next to the m
 
 - Validate reference-card detection on real phone photos in varied lighting.
 - Collect upload-style photos, run them through the pipeline, and build a new confusion matrix to measure real-world accuracy in this deployment mode.
-- Once YOLO is trained (see below), replace GrabCut with the detector for more reliable meat localisation.
 
 ---
 
-# Meat QC Pipeline — Conveyor Mode
-
-
-Real-time computer vision pipeline for automated meat quality control on a processing line.
-
-```
-camera → YOLO detector (bounding box + confidence)
-       → freshness CNN   (good / spoiled + confidence %)
-            ├── spoiled  → 🔴 DISCARD
-            └── good     → size classifier (bbox → mm)
-                               ├── small  → ⚙️  Grinding line
-                               └── big    → 📦 Packing line
-```
-
-Every accepted piece gets a colour-coded bounding box on the live feed with
-its freshness confidence and routing decision, and a row written to
-`output/decisions_log.csv` for full traceability and audit.
-
----
 
 ## ✅ Current Model Performance
 
@@ -263,64 +243,6 @@ size_classifier:
 
 ---
 
-## 🎥 Run the Live Camera Pipeline
-
-> **Note:** The live pipeline requires a trained YOLO detector
-> (`models/yolo_meat_detector.pt`). Without it, use `run_on_images.py`
-> for image-folder testing. See "Train YOLO detector" below.
-
-```bash
-# Live webcam (device 0):
-python -m src.pipeline --config config.yaml
-
-# Video file:
-# Edit config.yaml: camera.source: "path/to/video.mp4"
-python -m src.pipeline --config config.yaml
-```
-
----
-
-## 🔍 Train the YOLO Detector (for live camera use)
-
-1. Go to [Roboflow Universe](https://universe.roboflow.com) → search **"meat detection"**
-2. Export a dataset in **YOLOv11 format** → download the zip
-3. Extract to `data/dataset_yolo/`
-4. Train:
-
-```bash
-python scripts/train_yolo.py --data data/dataset_yolo/dataset.yaml --epochs 100
-```
-
----
-
-## 📏 Calibrate Size Measurement
-
-The size classifier converts bounding-box pixels to millimetres using
-`pixels_per_mm` in `config.yaml`. To calibrate for your camera:
-
-1. Place a flat object of **known width** (e.g. a 100mm card) on the belt.
-2. Run the detector on one frame and read the bounding box width in pixels.
-3. Set `pixels_per_mm = bbox_width_px / 100` in `config.yaml`.
-4. Set `size_threshold_mm` to whatever size separates "grind" from "pack"
-   in your specific process.
-
----
-
-## 🔌 Connect to Hardware
-
-`src/router.py` is the one module to adapt per site. Three backends are ready:
-
-| Backend | Description |
-|---|---|
-| `console` | Logs decisions only — safe default for testing |
-| `serial` | Sends a command byte to an Arduino/ESP32 driving a relay/diverter |
-| `mqtt` | Publishes decisions to a broker for PLC/SCADA integration |
-
-Fill in the `TODO`s in your chosen backend, then set `routing.backend`
-in `config.yaml`.
-
----
-
 ## 📝 Notes on Production Accuracy
 
 - **Lighting matters more than model choice.** Inconsistent belt lighting will
@@ -328,8 +250,6 @@ in `config.yaml`.
   consistent-colour-temperature lighting over the inspection zone.
 - **`good_confidence_threshold` is your safety dial.** Raising it discards
   more borderline pieces (safer) at the cost of more false rejects.
-- **The tracker prevents double-counting.** The same physical piece is only
-  classified once as it crosses multiple camera frames.
 - **Add your own footage!** Use `scripts/collect_data.py` to capture images
   from your production camera and `scripts/merge_datasets.py` to mix them
   into the training set. This is the single biggest lever for accuracy on
