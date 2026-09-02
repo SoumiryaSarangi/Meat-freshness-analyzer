@@ -6,3 +6,4 @@ torchvision>=0.17.0
 opencv-python-headless>=4.9.0
 numpy>=1.26.0
 pyyaml>=6.0
+Pillow>=10.0.0

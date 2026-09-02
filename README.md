@@ -241,3 +241,39 @@ size_classifier:
 - **`good_confidence_threshold` is your safety dial.** Raising it discards more borderline pieces (safer) at the cost of more false rejects.
 - **Add your own photos!** Use `scripts/collect_data.py` to capture images from your camera and `scripts/merge_datasets.py` to mix them into the training set. This is the single biggest lever for accuracy on your specific setup.
 - **Data Augmentation (Future Scope):** The `scripts/train_classifier.py` script already uses PyTorch `transforms` to randomly flip, rotate, and colour-jitter images during training. To squeeze out another 1-2% accuracy, you can add `RandomCrop` and `GaussianBlur` to those transforms if your photos frequently suffer from motion blur or zoom inconsistencies.
+
+---
+
+## 📷 Camera Capture & HTTPS
+
+The web app supports two input methods — file upload and live camera capture — both feeding the same classification pipeline.
+
+### HTTP vs HTTPS — what works where
+
+| Scenario | File Upload | Camera Capture |
+|---|---|---|
+| `http://localhost:8000` (desktop) | ✅ | ✅ |
+| `http://<lan-ip>:8000` (phone on same Wi-Fi) | ✅ | ❌ browser blocks |
+| `https://` any origin | ✅ | ✅ |
+
+**Why?** Browsers enforce that `getUserMedia` (camera access) requires a [Secure Context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). `localhost` is an exemption; any other plain-HTTP origin is not.
+
+### Testing on a real phone before production
+
+The fastest path is an HTTPS tunnel — no certificate setup needed:
+
+```bash
+# Install ngrok once: https://ngrok.com/download
+ngrok http 8000
+```
+
+Open the `https://xxxxx.ngrok-free.app` URL it prints on your phone. The rear camera will open by default.
+
+### Production deployment
+
+For a permanently reachable service, you need real HTTPS — either:
+- A reverse proxy (nginx / Caddy) in front of uvicorn with a TLS certificate (Let's Encrypt is free), or
+- A hosting platform that provides HTTPS automatically (Railway, Render, Fly.io, etc.).
+
+Plain `http://` on a public IP will get camera permission silently refused by the browser — this is the browser's security policy, not a bug in this app.
+

@@ -82,6 +82,37 @@
       gap: 24px;
     }
 
+    /* ── Mode tabs ── */
+    .mode-tabs {
+      display: flex;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface);
+    }
+    .mode-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .mode-tab.active {
+      background: var(--surface2);
+      color: var(--text);
+    }
+    .mode-tab:first-child { border-right: 1px solid var(--border); }
+
     /* ── Upload zone ── */
     #drop-zone {
       border: 2px dashed var(--border);
@@ -112,6 +143,69 @@
       text-align: center;
     }
     #file-input { display: none; }
+
+    /* ── Camera panel ── */
+    #camera-panel {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .camera-viewport {
+      position: relative;
+      width: 100%;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 4/3;
+    }
+    #camera-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    #camera-canvas { display: none; }
+    .camera-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 8px;
+    }
+    .camera-hint strong { color: var(--review); }
+    #camera-error {
+      display: none;
+      background: rgba(248,81,73,0.12);
+      border: 1px solid rgba(248,81,73,0.35);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 0.85rem;
+      color: var(--bad);
+      text-align: center;
+    }
+    #capture-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+    }
+    #capture-btn:hover:not(:disabled) {
+      background: var(--surface);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+    }
+    #capture-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* ── Thumbnail preview strip ── */
     #preview-strip {
@@ -146,6 +240,14 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      line-height: 1;
+    }
+    /* camera-sourced thumbnails get a small camera badge */
+    .thumb-wrap.from-camera::after {
+      content: '📷';
+      position: absolute;
+      bottom: 2px; left: 3px;
+      font-size: 0.6rem;
       line-height: 1;
     }
 
@@ -321,19 +423,40 @@
 
 <main>
 
+  <!-- Mode tabs — camera tab only shown if getUserMedia is available -->
+  <div class="mode-tabs" id="mode-tabs" style="display:none">
+    <button class="mode-tab active" id="tab-upload" type="button">&#128444; Upload Photos</button>
+    <button class="mode-tab"        id="tab-camera" type="button">&#128247; Use Camera</button>
+  </div>
+
   <!-- Upload zone -->
   <div id="drop-zone" role="button" tabindex="0" aria-label="Upload meat photos">
     <div class="drop-icon">🥩</div>
     <div class="drop-title">Drag &amp; drop photos here</div>
-    <div class="drop-sub">or tap to choose from your phone / laptop<br/>JPEG · PNG · up to 20 MB each</div>
+    <div class="drop-sub">or tap to choose from your phone / laptop<br/>JPEG · PNG · up to 20 MB each<br/><br/>
+      <strong style="color:var(--review)">Tip:</strong> include an ID-1 card next to the meat for accurate size measurement.</div>
     <input id="file-input" type="file" accept="image/*" multiple />
   </div>
 
-  <!-- Thumbnail previews -->
+  <!-- Camera panel -->
+  <div id="camera-panel">
+    <div class="camera-viewport">
+      <video id="camera-video" autoplay playsinline muted></video>
+    </div>
+    <canvas id="camera-canvas"></canvas>
+    <div id="camera-error"></div>
+    <div class="camera-hint">
+      <strong>Tip:</strong> include an ID-1 card next to the meat for accurate size measurement.
+      Capture multiple pieces one at a time, then tap <em>Check Photos</em>.
+    </div>
+    <button id="capture-btn" type="button" disabled>&#128247; Capture</button>
+  </div>
+
+  <!-- Thumbnail previews — shared between both modes -->
   <div id="preview-strip"></div>
 
   <!-- Submit -->
-  <button id="check-btn" type="button">🔬 Check Photos</button>
+  <button id="check-btn" type="button">&#128300; Check Photos</button>
 
   <!-- Loading -->
   <div class="spinner" id="spinner"></div>
@@ -350,24 +473,137 @@
 
 <script>
   // ── State ──────────────────────────────────────────────────────────────────
-  let selectedFiles = [];   // DataTransfer-style list
+  let selectedFiles = [];
+  let activeMode    = 'upload';   // 'upload' | 'camera'
+  let cameraStream  = null;       // active MediaStream or null
 
   // ── DOM refs ────────────────────────────────────────────────────────────────
+  const modeTabs      = document.getElementById('mode-tabs');
+  const tabUpload     = document.getElementById('tab-upload');
+  const tabCamera     = document.getElementById('tab-camera');
   const dropZone      = document.getElementById('drop-zone');
   const fileInput     = document.getElementById('file-input');
+  const cameraPanel   = document.getElementById('camera-panel');
+  const cameraVideo   = document.getElementById('camera-video');
+  const cameraCanvas  = document.getElementById('camera-canvas');
+  const cameraError   = document.getElementById('camera-error');
+  const captureBtn    = document.getElementById('capture-btn');
   const previewStrip  = document.getElementById('preview-strip');
   const checkBtn      = document.getElementById('check-btn');
   const spinner       = document.getElementById('spinner');
   const resultsSection = document.getElementById('results-section');
   const resultsGrid   = document.getElementById('results-grid');
 
-  // ── File picking ────────────────────────────────────────────────────────────
+  // ── Feature detection — show camera tab only when supported ────────────────
+  if (navigator.mediaDevices?.getUserMedia) {
+    modeTabs.style.display = 'flex';
+  }
+
+  // ── Mode switching ──────────────────────────────────────────────────────────
+  tabUpload.addEventListener('click', () => switchMode('upload'));
+  tabCamera.addEventListener('click', () => switchMode('camera'));
+
+  function switchMode(mode) {
+    if (activeMode === mode) return;
+    activeMode = mode;
+
+    tabUpload.classList.toggle('active', mode === 'upload');
+    tabCamera.classList.toggle('active', mode === 'camera');
+
+    if (mode === 'upload') {
+      dropZone.style.display    = '';
+      cameraPanel.style.display = 'none';
+      stopCamera();
+    } else {
+      dropZone.style.display    = 'none';
+      cameraPanel.style.display = 'flex';
+      startCamera();
+    }
+  }
+
+  // ── Camera lifecycle ────────────────────────────────────────────────────────
+  async function startCamera() {
+    cameraError.style.display = 'none';
+    captureBtn.disabled = true;
+
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' } }
+      });
+      cameraVideo.srcObject = cameraStream;
+      // Wait for video metadata so canvas dimensions are correct
+      await new Promise(resolve => {
+        cameraVideo.onloadedmetadata = resolve;
+        // In case metadata already loaded
+        if (cameraVideo.readyState >= 1) resolve();
+      });
+      captureBtn.disabled = false;
+    } catch (err) {
+      let msg = 'Camera error.';
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        msg = 'Camera permission denied. Please allow camera access in your browser settings and try again.';
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        msg = 'No camera found on this device.';
+      } else if (err.name === 'NotReadableError') {
+        msg = 'Camera is in use by another app. Close it and try again.';
+      } else if (location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+        msg = 'Camera requires a secure connection (HTTPS). Open this page over HTTPS or use localhost.';
+      } else {
+        msg = `Camera error: ${err.message}`;
+      }
+      cameraError.textContent = msg;
+      cameraError.style.display = 'block';
+    }
+  }
+
+  function stopCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
+    }
+    cameraVideo.srcObject = null;
+    captureBtn.disabled = true;
+  }
+
+  // Stop camera if user navigates away
+  window.addEventListener('pagehide', stopCamera);
+
+  // ── Capture ─────────────────────────────────────────────────────────────────
+  captureBtn.addEventListener('click', () => {
+    if (!cameraStream) return;
+
+    const vw = cameraVideo.videoWidth;
+    const vh = cameraVideo.videoHeight;
+    if (!vw || !vh) return;
+
+    cameraCanvas.width  = vw;
+    cameraCanvas.height = vh;
+    cameraCanvas.getContext('2d').drawImage(cameraVideo, 0, 0, vw, vh);
+
+    cameraCanvas.toBlob(blob => {
+      const filename = `camera_capture_${Date.now()}.jpg`;
+      const file = new File([blob], filename, { type: 'image/jpeg' });
+      // Tag it as camera-sourced so the thumbnail shows a 📷 badge
+      file._fromCamera = true;
+      addFiles([file]);
+
+      // Brief visual flash to confirm capture
+      captureBtn.textContent = '✔ Captured!';
+      captureBtn.disabled = true;
+      setTimeout(() => {
+        captureBtn.innerHTML = '&#128247; Capture';
+        captureBtn.disabled = false;
+      }, 700);
+    }, 'image/jpeg', 0.92);
+  });
+
+  // ── File picking (upload mode) ───────────────────────────────────────────────
   dropZone.addEventListener('click', () => fileInput.click());
   dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
 
   fileInput.addEventListener('change', () => {
     addFiles([...fileInput.files]);
-    fileInput.value = '';   // allow re-picking same file
+    fileInput.value = '';
   });
 
   // Drag & drop
@@ -379,6 +615,7 @@
     addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('image/')));
   });
 
+  // ── Shared file queue ────────────────────────────────────────────────────────
   function addFiles(files) {
     files.forEach(file => {
       if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
@@ -398,16 +635,16 @@
     selectedFiles.forEach((file, idx) => {
       const url = URL.createObjectURL(file);
       const wrap = document.createElement('div');
-      wrap.className = 'thumb-wrap';
+      wrap.className = 'thumb-wrap' + (file._fromCamera ? ' from-camera' : '');
       wrap.innerHTML = `<img src="${url}" alt="${file.name}" />
-        <button class="thumb-remove" title="Remove" aria-label="Remove ${file.name}">✕</button>`;
+        <button class="thumb-remove" title="Remove" aria-label="Remove ${file.name}">&#10005;</button>`;
       wrap.querySelector('.thumb-remove').addEventListener('click', () => removeFile(idx));
       previewStrip.appendChild(wrap);
     });
     checkBtn.style.display = selectedFiles.length ? 'block' : 'none';
   }
 
-  // ── Submit ──────────────────────────────────────────────────────────────────
+  // ── Submit — same path for upload and camera captures ───────────────────────
   checkBtn.addEventListener('click', submitFiles);
 
   async function submitFiles() {
@@ -463,8 +700,8 @@
           : (r.spoiled_confidence * 100).toFixed(1);
         const barPct = parseFloat(pct);
         const pieceTag = r.piece_count_estimate > 0
-          ? `<span class="tag" style="border-color:rgba(63,185,80,0.45);color:var(--good)">&#127922; ~${r.piece_count_estimate} pieces</span>`
-          : `<span class="tag" style="border-color:rgba(63,185,80,0.45);color:var(--good)">&#127922; Multiple pieces</span>`;
+          ? `<span class="tag" style="border-color:rgba(240,165,0,0.45);color:var(--review)">&#127922; ~${r.piece_count_estimate} pieces</span>`
+          : `<span class="tag" style="border-color:rgba(240,165,0,0.45);color:var(--review)">&#127922; Multiple pieces</span>`;
 
         card.className = `result-card ${cls}`;
         card.style.animationDelay = `${i * 60}ms`;

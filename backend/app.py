@@ -13,6 +13,7 @@ Then open http://localhost:8000 in a browser, or from a phone on the same
 network: http://<your-machine-ip>:8000
 """
 
+import io
 import os
 from pathlib import Path
 from contextlib import asynccontextmanager
@@ -23,6 +24,7 @@ import yaml
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
+from PIL import Image, ImageOps
 
 from freshness_classifier import FreshnessClassifier
 from pipeline import process_image
@@ -33,6 +35,29 @@ from pipeline import process_image
 BACKEND_DIR = Path(__file__).resolve().parent
 FRONTEND_DIR = BACKEND_DIR.parent / "frontend"
 CONFIG_PATH = BACKEND_DIR / "config.yaml"
+
+
+def decode_upload_bytes(contents: bytes) -> np.ndarray | None:
+    """Decode raw upload bytes to a BGR ndarray, normalising EXIF orientation.
+
+    Gallery photos from phones frequently embed an EXIF orientation tag
+    instead of physically rotating pixels — cv2.imdecode ignores this tag,
+    producing sideways/upside-down images that confuse GrabCut and the
+    freshness classifier.  PIL's exif_transpose() fixes that before we
+    ever pass pixels to OpenCV.
+
+    Returns None if the bytes cannot be decoded as an image.
+    """
+    try:
+        pil_img = Image.open(io.BytesIO(contents))
+        pil_img = ImageOps.exif_transpose(pil_img)  # no-op if no EXIF orientation tag
+        pil_img = pil_img.convert("RGB")
+        arr = np.array(pil_img)
+        return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
+    except Exception:
+        # Fall back to cv2 for any format PIL cannot open (e.g. corrupted)
+        arr = np.frombuffer(contents, dtype=np.uint8)
+        return cv2.imdecode(arr, cv2.IMREAD_COLOR)
 
 # ---------------------------------------------------------------------------
 # Startup / shutdown
@@ -111,8 +136,7 @@ async def classify(files: list[UploadFile] = File(...)):
 
     for upload in files:
         raw = await upload.read()
-        arr = np.frombuffer(raw, dtype=np.uint8)
-        image = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        image = decode_upload_bytes(raw)
 
         if image is None:
             results.append({
