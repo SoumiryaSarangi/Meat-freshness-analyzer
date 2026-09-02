@@ -1,5 +1,60 @@
 # Meat QC Pipeline
 
+> **🆕 Web App is live!** Upload a phone photo → get freshness verdict + routing decision.
+> See [Web App Quick Start](#-web-app-quick-start) below.
+
+---
+
+## 🌐 Web App Quick Start
+
+A FastAPI server lets anyone upload photos (from phone or laptop) and get:
+- ✅ **Good** / ❌ **Spoiled** with confidence %
+- Routing decision: **Discard** / **Grinding** / **Packing**
+- Size method: **Measured** (reference card found) or **Estimated** (fallback)
+
+### Why the architecture changed from conveyor pipeline
+
+| Conveyor Pipeline | Web Upload |
+|---|---|
+| YOLO detector (needs training data) | GrabCut segmentation (works instantly, no training) |
+| Fixed `pixels_per_mm` (camera at known height) | Reference-card per-photo calibration (place a credit/ID card next to the meat) |
+| Real-time camera loop + hardware router | Per-request HTTP: one image → one JSON response |
+
+**Trade-offs:** GrabCut is a generic segmenter with no meat-specific knowledge — it may struggle with complex backgrounds. Reference-card detection is shape-based (aspect ratio ≈ 1.586) and could match other rectangular objects. `size_threshold_mm=120` is a placeholder carried over from the conveyor design and has not been validated against a real product-line size cutoff.
+
+### Run the web server
+
+```bash
+cd backend
+pip install -r requirements.txt
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
+
+Then open **http://localhost:8000** in a browser.
+From a phone on the same Wi-Fi: **http://\<your-machine-ip\>:8000**
+
+### How to use size calibration
+
+Place a standard **credit / debit / ID card** (85.60 mm wide) flat next to the meat in the photo. The server detects the card's shape, derives pixels-per-mm for that specific photo, and marks the size result as **"Measured"**. Without a card, it falls back to a frame-area estimate marked **"Estimated"**.
+
+### Known limitations
+
+- GrabCut segments by colour/texture contrast — unusual backgrounds or very dark meat may cause mis-segmentation (a fallback to the whole image is applied automatically).
+- Card detection is contour-based; other rectangular objects (cutting board edge, phone case) could be mistaken for the card.
+- `size_threshold_mm = 120` is unvalidated — treat size routing as indicative until confirmed against your actual product sizes.
+- The existing 94.2% accuracy confusion matrix was validated on cropped dataset images, not on segmented crops from phone uploads. Re-evaluate on representative upload photos before production use.
+
+### Next steps
+
+- Validate reference-card detection on real phone photos in varied lighting.
+- Collect upload-style photos, run them through the pipeline, and build a new confusion matrix to measure real-world accuracy in this deployment mode.
+- Once YOLO is trained (see below), replace GrabCut with the detector for more reliable meat localisation.
+
+---
+
+# Meat QC Pipeline — Conveyor Mode
+
+
 Real-time computer vision pipeline for automated meat quality control on a processing line.
 
 ```
@@ -155,32 +210,45 @@ python scripts/run_on_images.py --images data/dataset_freshness/val --show
 ## 📁 Project Layout
 
 ```
-config.yaml                 All tunable parameters (thresholds, device, paths)
-requirements.txt            Python dependencies
 models/
-  freshness_classifier.pt   Trained CNN weights (saved automatically by training)
+  freshness_classifier.pt     Trained CNN weights (auto-saved by train_classifier.py)
 src/
-  detector.py               YOLO wrapper → Detection(bbox, confidence)
-  freshness_classifier.py   CNN → good/spoiled + confidence
-  size_classifier.py        bbox pixels → mm → small/big
-  tracker.py                Centroid tracker (process each belt piece once)
-  router.py                 Decision → hardware signal (serial/MQTT/console)
-  pipeline.py               Main real-time camera loop
-scripts/
-  prepare_dataset.py        Extract & organise the Kaggle zip
-  merge_datasets.py         Mix additional images into train/val split
-  run_on_images.py          Test runner: runs pipeline on a folder of images
-  analyze_results.py        Reads the CSV log and prints accuracy metrics
-  collect_data.py           Webcam capture tool for building your own dataset
-  train_classifier.py       Trains the freshness CNN (MobileNetV2)
-  train_yolo.py             Trains the YOLO meat detector
+  freshness_classifier.py     CNN classifier class — imported by run_on_images.py
+  size_classifier.py          Pixel-based size class — imported by run_on_images.py
+  __init__.py
+scripts/                      ← Everything needed to reproduce training + validation
+  prepare_dataset.py          Extract & organise the Kaggle zip
+  merge_datasets.py           Mix additional images into train/val split
+  collect_data.py             Webcam capture tool for building your own dataset
+  train_classifier.py         Trains the freshness CNN (MobileNetV2)
+  run_on_images.py            Test runner: runs pipeline on a folder of images
+  analyze_results.py          Reads the CSV log and prints accuracy metrics
+backend/                      ← Web app (FastAPI server)
+  app.py                      FastAPI server — POST /api/classify, GET /
+  pipeline.py                 Per-image orchestrator (segment→classify→size→decide)
+  segmentation.py             GrabCut meat region isolation
+  size_estimator.py           Reference-card calibration + big/small call
+  freshness_classifier.py     Same architecture as src/ — loads existing weights
+  config.yaml                 Web pipeline config (device, thresholds, card dims)
+  requirements.txt            Backend Python dependencies
+  test_pipeline.py            Mandatory test suite (all 3 tests pass)
+frontend/
+  index.html                  Single-file mobile-first UI (drag-drop + result cards)
+legacy/                       ← Retired conveyor belt code (not used by web app)
+  pipeline_conveyor.py        Original real-time camera loop
+  detector.py                 YOLO wrapper (detector was never trained)
+  router.py                   Serial / MQTT hardware signal stubs
+  tracker.py                  Centroid tracker for belt pieces
+  train_yolo.py               YOLO training script
+  config_conveyor.yaml        Original full conveyor config
+  README.md                   Explains what's here and how to revive it
 ```
 
 ---
 
-## ⚙️ Configuration (`config.yaml`)
+## ⚙️ Configuration (`backend/config.yaml`)
 
-All major parameters are in `config.yaml`. Key settings:
+All web pipeline parameters are in `backend/config.yaml`:
 
 ```yaml
 freshness_classifier:
@@ -188,12 +256,9 @@ freshness_classifier:
   good_confidence_threshold: 0.60  # Safety dial: raise → stricter, lower → permissive
 
 size_classifier:
-  pixels_per_mm: 4.2               # Calibrate this for your camera!
-  size_threshold_mm: 120           # Below = small (grind), above = big (pack)
-
-routing:
-  backend: "console"               # "console" | "serial" | "mqtt"
-  serial_port: "COM3"              # For Arduino/ESP32 diverter
+  size_threshold_mm: 120           # ⚠️ Unvalidated placeholder
+  card_width_mm: 85.60             # ID-1 standard card width
+  card_aspect_tolerance: 0.18      # ±tolerance for perspective skew
 ```
 
 ---
@@ -269,3 +334,9 @@ in `config.yaml`.
   from your production camera and `scripts/merge_datasets.py` to mix them
   into the training set. This is the single biggest lever for accuracy on
   your specific setup.
+- **Data Augmentation (Future Scope):** The `scripts/train_classifier.py` script 
+  already uses PyTorch `transforms` to randomly flip, rotate, and color-jitter 
+  images during training to teach the model to ignore camera angles and minor 
+  lighting shifts. To squeeze out another 1-2% accuracy in the future, you can 
+  add `RandomCrop` and `GaussianBlur` to those transforms if your real camera 
+  frequently suffers from motion blur or zoom inconsistencies.
