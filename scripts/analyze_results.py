@@ -1,3 +1,13 @@
+"""
+Analyze the CSV output from run_on_images.py and print accuracy metrics.
+
+Expects CSV with columns: filename, freshness_label, good_conf, spoiled_conf
+
+Ground truth is inferred from filename prefixes:
+  FRESH-*   → actual good
+  otherwise → actual spoiled (HALF-FRESH, SPOILED)
+"""
+
 import csv, statistics
 
 with open('output/test_decisions_log.csv') as f:
@@ -41,9 +51,3 @@ print()
 print('=== CONFIDENCE STATS ===')
 print(f'  Mean  good_conf: {statistics.mean(good_confs):.4f}')
 print(f'  Median good_conf:{statistics.median(good_confs):.4f}')
-print()
-print('=== SIZE ISSUE ===')
-print(f'  All classified as SMALL (packing=0) - size threshold needs calibration')
-print(f'  Current pixels_per_mm=4.2, threshold=120mm -> need bbox > 504px')
-print(f'  These are 416x416 cropped dataset images, so all will be "small"')
-print(f'  Size classification will work correctly with real camera/bboxes')

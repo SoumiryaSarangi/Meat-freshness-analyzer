@@ -1,0 +1,7 @@
+# Dependencies for the retired conveyor belt pipeline.
+# These are NOT needed for the web app or training scripts.
+# Install only if you are reviving the conveyor pipeline code in this folder.
+
+ultralytics>=8.2.0    # YOLO detector (train_yolo.py, detector.py)
+pyserial>=3.5         # Serial hardware router (router.py)
+paho-mqtt>=2.0.0      # MQTT hardware router (router.py)

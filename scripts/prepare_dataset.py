@@ -22,9 +22,8 @@ Output structure (for train_classifier.py):
             spoiled/
 
 Usage:
-    python scripts/prepare_dataset.py
-    python scripts/prepare_dataset.py --zip "C:/Users/ss/Downloads/archive (2).zip"
-    python scripts/prepare_dataset.py --zip "C:/Users/ss/Downloads/archive (2).zip" --half-fresh good
+    python scripts/prepare_dataset.py --zip "C:/Users/YourName/Downloads/archive.zip"
+    python scripts/prepare_dataset.py --zip "C:/Users/YourName/Downloads/archive.zip" --half-fresh good
 """
 
 import argparse
@@ -34,8 +33,6 @@ import zipfile
 from pathlib import Path
 
 
-# Default zip path (Kaggle archive (2).zip = Meat Freshness v1)
-DEFAULT_ZIP = r"C:\Users\ss\Downloads\archive (2).zip"
 OUT_DIR = Path("data/dataset_freshness")
 
 # Filename prefix -> class mapping
@@ -138,8 +135,8 @@ def prepare(zip_path: str, out_dir: Path, half_fresh: str) -> None:
 def main():
     parser = argparse.ArgumentParser(description="Prepare Meat Freshness dataset.")
     parser.add_argument(
-        "--zip", default=DEFAULT_ZIP,
-        help="Path to the Kaggle zip file (archive (2).zip = Meat Freshness v1)"
+        "--zip", required=True,
+        help="Path to the Kaggle zip file (e.g. 'C:/Users/YourName/Downloads/archive.zip')"
     )
     parser.add_argument(
         "--out", default=str(OUT_DIR),

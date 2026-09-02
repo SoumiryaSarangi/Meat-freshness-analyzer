@@ -28,8 +28,10 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 
-sys.path.append(".")
-from src.freshness_classifier import build_model  # noqa: E402
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "backend"))
+from freshness_classifier import build_model  # noqa: E402
 
 
 def main():

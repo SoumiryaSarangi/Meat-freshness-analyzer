@@ -2,9 +2,9 @@
 Data collection utility.
 
 Public datasets (see README) are a fine starting point, but a model trained
-only on them will likely underperform on your actual conveyor camera, angle,
-and lighting. Use this script to capture images directly from your production
-camera to fine-tune on.
+only on them will likely underperform on your own camera and lighting. Use
+this script to capture images directly from a webcam or camera feed to
+fine-tune on.
 
 Usage:
     python scripts/collect_data.py --source 0 --out data/raw --interval 0.5
@@ -13,12 +13,10 @@ Controls while running:
     SPACE - capture a frame immediately (in addition to the timed interval)
     q     - quit
 
-After collecting, label images for:
-  - The freshness classifier: sort crops into data/dataset_freshness/good/
-    and data/dataset_freshness/spoiled/ (folder-per-class, as expected by
-    torchvision.datasets.ImageFolder).
-  - The YOLO detector: annotate bounding boxes with a tool such as Roboflow
-    Annotate or CVAT, exporting to YOLO format into data/dataset_yolo/.
+After collecting, sort your images into:
+  data/dataset_freshness/good/     -- fresh meat
+  data/dataset_freshness/spoiled/  -- spoiled meat
+Then use merge_datasets.py to add them to your train/val split.
 """
 
 import argparse
