@@ -1,0 +1,146 @@
+"""
+FastAPI server — Meat QC web pipeline.
+
+Endpoints:
+    GET  /                      Serves the frontend UI (../frontend/index.html)
+    POST /api/classify          Multi-file upload → JSON results
+
+Usage:
+    cd backend
+    uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+
+Then open http://localhost:8000 in a browser, or from a phone on the same
+network: http://<your-machine-ip>:8000
+"""
+
+import os
+from pathlib import Path
+from contextlib import asynccontextmanager
+
+import cv2
+import numpy as np
+import yaml
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+
+from freshness_classifier import FreshnessClassifier
+from pipeline import process_image
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+BACKEND_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BACKEND_DIR.parent / "frontend"
+CONFIG_PATH = BACKEND_DIR / "config.yaml"
+
+# ---------------------------------------------------------------------------
+# Startup / shutdown
+# ---------------------------------------------------------------------------
+_classifier: FreshnessClassifier | None = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load models once at server startup."""
+    global _classifier
+    # utf-8-sig strips the BOM that Windows text editors sometimes write
+    with open(CONFIG_PATH, encoding='utf-8-sig') as f:
+        cfg = yaml.safe_load(f)
+    app.state.cfg = cfg
+
+    fc = cfg["freshness_classifier"]
+    weights = str(BACKEND_DIR / fc["weights"]) if not os.path.isabs(fc["weights"]) \
+        else fc["weights"]
+    # Resolve relative path from the project root if the ../models/ pattern is used
+    if not os.path.exists(weights):
+        weights = str((BACKEND_DIR / Path(fc["weights"])).resolve())
+
+    _classifier = FreshnessClassifier(
+        weights_path=weights,
+        input_size=int(fc.get("input_size", 224)),
+        device=fc.get("device", "cpu"),
+        class_names=fc.get("class_names", ("good", "spoiled")),
+        good_confidence_threshold=float(fc.get("good_confidence_threshold", 0.60)),
+    )
+    print("[app] Models loaded. Server ready.")
+    yield
+    print("[app] Shutdown.")
+
+
+app = FastAPI(
+    title="Meat QC API",
+    description="Upload meat photos; get freshness classification + routing decisions.",
+    version="2.0.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+@app.get("/", include_in_schema=False)
+async def serve_frontend():
+    """Serve the single-file frontend."""
+    index = FRONTEND_DIR / "index.html"
+    if not index.exists():
+        raise HTTPException(status_code=404,
+                            detail="frontend/index.html not found")
+    return FileResponse(str(index), media_type="text/html")
+
+
+@app.post("/api/classify")
+async def classify(files: list[UploadFile] = File(...)):
+    """Classify one or more uploaded meat photos.
+
+    Returns a JSON object with a 'results' list, one entry per uploaded file,
+    in the same order as the files were uploaded.
+    """
+    if not files:
+        raise HTTPException(status_code=400, detail="No files uploaded.")
+
+    cfg = app.state.cfg
+    results = []
+
+    for upload in files:
+        raw = await upload.read()
+        arr = np.frombuffer(raw, dtype=np.uint8)
+        image = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+
+        if image is None:
+            results.append({
+                "filename": upload.filename,
+                "error": "Could not decode image. Please upload a valid JPEG/PNG.",
+            })
+            continue
+
+        try:
+            result = process_image(
+                image_bgr=image,
+                filename=upload.filename or "upload",
+                classifier=_classifier,
+                cfg=cfg,
+            )
+        except Exception as exc:
+            results.append({
+                "filename": upload.filename,
+                "error": f"Processing error: {exc}",
+            })
+            continue
+
+        results.append(result)
+
+    return JSONResponse(content={"results": results})
+
+
+@app.get("/health")
+async def health():
+    """Quick liveness check."""
+    return {"status": "ok", "model_loaded": _classifier is not None}

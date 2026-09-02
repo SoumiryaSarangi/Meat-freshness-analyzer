@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meat QC — Quality Check</title>
+  <meta name="description" content="Upload meat photos to classify freshness, get routing decisions (discard / grinding / packing), and a confidence score." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0d1117;
+      --surface:     #161b22;
+      --surface2:    #21262d;
+      --border:      #30363d;
+      --text:        #e6edf3;
+      --muted:       #8b949e;
+      --good:        #3fb950;
+      --good-glow:   rgba(63,185,80,0.25);
+      --bad:         #f85149;
+      --bad-glow:    rgba(248,81,73,0.25);
+      --accent:      #e34040;
+      --accent2:     #ff6b6b;
+      --radius:      16px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Header ── */
+    header {
+      width: 100%;
+      padding: 24px 24px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .logo {
+      font-size: clamp(2rem, 7vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .logo span { color: var(--accent); }
+    .tagline {
+      font-size: 0.9rem;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .badge-model {
+      margin-top: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 0.72rem;
+      padding: 3px 12px;
+      color: var(--muted);
+    }
+    .badge-model strong { color: var(--good); }
+
+    /* ── Main container ── */
+    main {
+      width: 100%;
+      max-width: 640px;
+      padding: 28px 16px 80px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ── Upload zone ── */
+    #drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      user-select: none;
+    }
+    #drop-zone:hover, #drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(227, 64, 64, 0.06);
+      transform: scale(1.01);
+    }
+    .drop-icon { font-size: 2.8rem; }
+    .drop-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+    .drop-sub {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    #file-input { display: none; }
+
+    /* ── Thumbnail preview strip ── */
+    #preview-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .thumb-wrap {
+      position: relative;
+      width: 72px;
+      height: 72px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .thumb-remove {
+      position: absolute;
+      top: 3px; right: 3px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.7);
+      border: none;
+      color: #fff;
+      font-size: 0.65rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    /* ── Submit button ── */
+    #check-btn {
+      display: none;
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    #check-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+    #check-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: none;
+      width: 32px; height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Results grid ── */
+    #results-section { display: none; }
+    .results-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    #results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    /* ── Result card ── */
+    .result-card {
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 20px;
+      border: 2px solid transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: transform 0.2s;
+      animation: fadeUp 0.35s ease both;
+    }
+    .result-card:hover { transform: translateY(-2px); }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .result-card.good {
+      border-color: var(--good);
+      box-shadow: 0 0 28px var(--good-glow);
+    }
+    .result-card.spoiled {
+      border-color: var(--bad);
+      box-shadow: 0 0 28px var(--bad-glow);
+    }
+    .result-card.error {
+      border-color: var(--border);
+      opacity: 0.7;
+    }
+
+    .card-header { display: flex; flex-direction: column; gap: 4px; }
+    .card-filename {
+      font-size: 0.72rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .verdict-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .verdict-badge {
+      padding: 4px 14px;
+      border-radius: 99px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .verdict-badge.good  { background: rgba(63,185,80,0.18);  color: var(--good); }
+    .verdict-badge.spoiled { background: rgba(248,81,73,0.18); color: var(--bad); }
+    .confidence-pct {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+    .confidence-pct.good { color: var(--good); }
+    .confidence-pct.spoiled { color: var(--bad); }
+
+    /* Confidence bar */
+    .conf-bar-wrap {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .conf-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+    .conf-bar-fill.good    { background: var(--good); }
+    .conf-bar-fill.spoiled { background: var(--bad); }
+
+    .card-footer { display: flex; flex-direction: column; gap: 8px; }
+    .decision-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 10px;
+      background: var(--surface2);
+      font-size: 0.85rem;
+      font-weight: 600;
+      width: fit-content;
+    }
+    .decision-badge .icon { font-size: 1rem; }
+
+    .size-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+    .tag {
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .tag.measured { border-color: rgba(63,185,80,0.4); color: var(--good); }
+    .tag.estimated { border-color: rgba(255,200,0,0.4); color: #f0c040; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      text-align: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Meat <span>QC</span></div>
+  <div class="tagline">AI-powered freshness classification</div>
+  <div class="badge-model">Model: <strong>MobileNetV2</strong> · 94.2% accuracy · 96.7% spoilage detection</div>
+</header>
+
+<main>
+
+  <!-- Upload zone -->
+  <div id="drop-zone" role="button" tabindex="0" aria-label="Upload meat photos">
+    <div class="drop-icon">🥩</div>
+    <div class="drop-title">Drag &amp; drop photos here</div>
+    <div class="drop-sub">or tap to choose from your phone / laptop<br/>JPEG · PNG · up to 20 MB each</div>
+    <input id="file-input" type="file" accept="image/*" multiple />
+  </div>
+
+  <!-- Thumbnail previews -->
+  <div id="preview-strip"></div>
+
+  <!-- Submit -->
+  <button id="check-btn" type="button">🔬 Check Photos</button>
+
+  <!-- Loading -->
+  <div class="spinner" id="spinner"></div>
+
+  <!-- Results -->
+  <section id="results-section">
+    <div class="results-title">Results</div>
+    <div id="results-grid"></div>
+  </section>
+
+</main>
+
+<footer>Meat QC Pipeline · Upload-based freshness analysis</footer>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  let selectedFiles = [];   // DataTransfer-style list
+
+  // ── DOM refs ────────────────────────────────────────────────────────────────
+  const dropZone      = document.getElementById('drop-zone');
+  const fileInput     = document.getElementById('file-input');
+  const previewStrip  = document.getElementById('preview-strip');
+  const checkBtn      = document.getElementById('check-btn');
+  const spinner       = document.getElementById('spinner');
+  const resultsSection = document.getElementById('results-section');
+  const resultsGrid   = document.getElementById('results-grid');
+
+  // ── File picking ────────────────────────────────────────────────────────────
+  dropZone.addEventListener('click', () => fileInput.click());
+  dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
+
+  fileInput.addEventListener('change', () => {
+    addFiles([...fileInput.files]);
+    fileInput.value = '';   // allow re-picking same file
+  });
+
+  // Drag & drop
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('image/')));
+  });
+
+  function addFiles(files) {
+    files.forEach(file => {
+      if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+        selectedFiles.push(file);
+      }
+    });
+    renderPreviews();
+  }
+
+  function removeFile(idx) {
+    selectedFiles.splice(idx, 1);
+    renderPreviews();
+  }
+
+  function renderPreviews() {
+    previewStrip.innerHTML = '';
+    selectedFiles.forEach((file, idx) => {
+      const url = URL.createObjectURL(file);
+      const wrap = document.createElement('div');
+      wrap.className = 'thumb-wrap';
+      wrap.innerHTML = `<img src="${url}" alt="${file.name}" />
+        <button class="thumb-remove" title="Remove" aria-label="Remove ${file.name}">✕</button>`;
+      wrap.querySelector('.thumb-remove').addEventListener('click', () => removeFile(idx));
+      previewStrip.appendChild(wrap);
+    });
+    checkBtn.style.display = selectedFiles.length ? 'block' : 'none';
+  }
+
+  // ── Submit ──────────────────────────────────────────────────────────────────
+  checkBtn.addEventListener('click', submitFiles);
+
+  async function submitFiles() {
+    if (!selectedFiles.length) return;
+
+    checkBtn.disabled = true;
+    spinner.style.display = 'block';
+    resultsSection.style.display = 'none';
+    resultsGrid.innerHTML = '';
+
+    const fd = new FormData();
+    selectedFiles.forEach(f => fd.append('files', f));
+
+    try {
+      const resp = await fetch('/api/classify', { method: 'POST', body: fd });
+      if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+      const data = await resp.json();
+      renderResults(data.results);
+    } catch (err) {
+      resultsGrid.innerHTML = `<p style="color:var(--bad);padding:16px">Error: ${err.message}</p>`;
+      resultsSection.style.display = 'block';
+    } finally {
+      spinner.style.display = 'none';
+      checkBtn.disabled = false;
+    }
+  }
+
+  // ── Render results ──────────────────────────────────────────────────────────
+  function renderResults(results) {
+    resultsGrid.innerHTML = '';
+
+    results.forEach((r, i) => {
+      const card = document.createElement('div');
+
+      if (r.error) {
+        card.className = 'result-card error';
+        card.style.animationDelay = `${i * 60}ms`;
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-filename" title="${r.filename}">${r.filename}</div>
+          </div>
+          <div style="color:var(--bad);font-size:.9rem">⚠ ${r.error}</div>`;
+        resultsGrid.appendChild(card);
+        return;
+      }
+
+      const isGood = r.label === 'good';
+      const cls    = isGood ? 'good' : 'spoiled';
+      const pct    = isGood
+        ? (r.good_confidence * 100).toFixed(1)
+        : (r.spoiled_confidence * 100).toFixed(1);
+      const barPct = parseFloat(pct);
+
+      const decisionIcons = { discard: '🗑️', grinding: '⚙️', packing: '📦' };
+      const decisionIcon  = decisionIcons[r.decision] || '→';
+      const decisionLabel = r.decision ? r.decision.toUpperCase() : '—';
+
+      const sizeBadge = r.size_method === 'measured'
+        ? `<span class="tag measured">📏 Size: Measured</span>`
+        : r.size_method === 'estimated'
+        ? `<span class="tag estimated">〜 Size: Estimated</span>`
+        : '';
+      const mmBadge = r.longest_dimension_mm != null
+        ? `<span class="tag">${r.longest_dimension_mm} mm</span>`
+        : '';
+      const sizeTags = (sizeBadge || mmBadge)
+        ? `<div class="size-tags">${sizeBadge}${mmBadge}</div>` : '';
+
+      card.className = `result-card ${cls}`;
+      card.style.animationDelay = `${i * 60}ms`;
+      card.innerHTML = `
+        <div class="card-header">
+          <div class="card-filename" title="${r.filename}">${r.filename}</div>
+          <div class="verdict-row">
+            <span class="verdict-badge ${cls}">${r.label.toUpperCase()}</span>
+            <span class="confidence-pct ${cls}">${pct}%</span>
+          </div>
+        </div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-fill ${cls}" style="width:${barPct}%"></div>
+        </div>
+        <div class="card-footer">
+          <div class="decision-badge">
+            <span class="icon">${decisionIcon}</span>
+            ${decisionLabel}
+          </div>
+          ${sizeTags}
+        </div>`;
+
+      resultsGrid.appendChild(card);
+    });
+
+    resultsSection.style.display = 'block';
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+
+</body>
+</html>

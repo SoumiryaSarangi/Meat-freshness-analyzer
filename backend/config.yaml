@@ -1,0 +1,24 @@
+# === Meat QC Web Pipeline Configuration ===
+
+freshness_classifier:
+  weights: "../models/freshness_classifier.pt"
+  input_size: 224
+  device: "cuda"                        # "cuda" or "cpu"
+  good_confidence_threshold: 0.60
+  class_names: ["good", "spoiled"]     # index 0 = good, index 1 = spoiled
+
+size_classifier:
+  # ID-1 standard card dimensions (credit / debit / national ID card)
+  card_width_mm: 85.60
+  card_height_mm: 53.98                # aspect ratio = 85.60 / 53.98 ≈ 1.586
+  card_aspect_tolerance: 0.18          # accept ±0.18 to allow perspective skew
+
+  # ⚠️  size_threshold_mm carried over from the original conveyor design.
+  # It has NOT been validated against a real grinding/packing size cutoff.
+  # Treat it as a placeholder until tested against actual product.
+  size_threshold_mm: 120
+
+  # Fallback: if no reference card is detected, classify by meat-bbox area
+  # relative to the total image area (0.0 – 1.0).  Above this = "big".
+  # This is a rough heuristic — results are always marked size_method="estimated".
+  fallback_area_threshold: 0.35
