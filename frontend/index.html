@@ -455,16 +455,16 @@
       }
 
       // ── Multi-piece tray: amber grinding card ──────────────────────────────
-      if (r.decision === 'grinding' && r.likely_multiple_pieces) {
+      if (r.size_method === 'multiple_pieces_detected') {
         const isGood = r.label === 'good';
         const cls    = isGood ? 'good' : 'spoiled';
         const pct    = isGood
           ? (r.good_confidence * 100).toFixed(1)
           : (r.spoiled_confidence * 100).toFixed(1);
         const barPct = parseFloat(pct);
-        const countMsg = r.piece_count_estimate > 0
-          ? `~${r.piece_count_estimate} pieces detected`
-          : 'Multiple pieces detected';
+        const pieceTag = r.piece_count_estimate > 0
+          ? `<span class="tag" style="border-color:rgba(240,165,0,0.45);color:var(--review)">&#127922; ~${r.piece_count_estimate} pieces</span>`
+          : `<span class="tag" style="border-color:rgba(240,165,0,0.45);color:var(--review)">&#127922; Multiple pieces</span>`;
 
         card.className = 'result-card review';
         card.style.animationDelay = `${i * 60}ms`;
@@ -484,9 +484,7 @@
               <span class="icon">&#9881;</span>
               GRINDING
             </div>
-            <div style="font-size:0.8rem;color:var(--review);margin-top:4px">
-              ${countMsg} &mdash; sent to grinding.
-            </div>
+            <div class="size-tags">${pieceTag}</div>
           </div>`;
         resultsGrid.appendChild(card);
         return;
