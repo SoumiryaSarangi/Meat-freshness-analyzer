@@ -161,6 +161,93 @@ except Exception as e:
     test2_ok = False
 
 # ────────────────────────────────────────────────────────────────────────────
+# Test 2b/2c: Piece-count estimation (synthetic)
+# ────────────────────────────────────────────────────────────────────────────
+section("TEST 2b — Piece Count: Single Ellipse (regression check)")
+
+try:
+    from segmentation import estimate_piece_count, segment_meat
+    import numpy as np
+
+    # Single filled ellipse on a white background
+    H2, W2 = 400, 400
+    single_img = np.full((H2, W2, 3), 240, dtype=np.uint8)
+    cv2.ellipse(single_img, (200, 200), (80, 60), 0, 0, 360, (60, 40, 150), -1)
+
+    seg_single = segment_meat(single_img)
+    print(f"  piece_count_estimate: {seg_single.piece_count_estimate}  (expected 1)")
+    print(f"  likely_multiple_pieces: {seg_single.likely_multiple_pieces}  (expected False)")
+    assert seg_single.piece_count_estimate == 1, (
+        f"Expected 1 piece, got {seg_single.piece_count_estimate}"
+    )
+    assert seg_single.likely_multiple_pieces is False
+    print(f"  Result: {PASS}")
+    test2b_ok = True
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+    print(f"  Result: {FAIL}  — {e}")
+    test2b_ok = False
+
+section("TEST 2c — Piece Count: 8 Separated Ellipses")
+
+try:
+    # 8 small ellipses well-separated (simulates diced chunks with clear gaps)
+    H3, W3 = 500, 500
+    multi_sep = np.full((H3, W3, 3), 240, dtype=np.uint8)
+    centres_sep = [
+        (80,  80),  (200,  80), (320,  80), (440,  80),
+        (80, 280),  (200, 280), (320, 280), (440, 280),
+    ]
+    for cx, cy in centres_sep:
+        cv2.ellipse(multi_sep, (cx, cy), (35, 25), 0, 0, 360, (60, 40, 150), -1)
+
+    seg_sep = segment_meat(multi_sep)
+    print(f"  piece_count_estimate: {seg_sep.piece_count_estimate}  (expected >= 2)")
+    print(f"  likely_multiple_pieces: {seg_sep.likely_multiple_pieces}  (expected True)")
+    assert seg_sep.piece_count_estimate >= 2, (
+        f"Expected >= 2 pieces, got {seg_sep.piece_count_estimate}. "
+        "Consider lowering multi_piece_dist_threshold in config.yaml."
+    )
+    assert seg_sep.likely_multiple_pieces is True
+    print(f"  Result: {PASS}")
+    test2c_ok = True
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+    print(f"  Result: {FAIL}  — {e}")
+    test2c_ok = False
+
+section("TEST 2d — Piece Count: 6 Touching/Overlapping Ellipses")
+
+try:
+    # 6 ellipses close enough that some touch/overlap (harder case)
+    H4, W4 = 400, 400
+    multi_touch = np.full((H4, W4, 3), 240, dtype=np.uint8)
+    centres_touch = [
+        (100, 120), (170, 100), (240, 125),
+        (110, 220), (185, 200), (260, 215),
+    ]
+    for cx, cy in centres_touch:
+        cv2.ellipse(multi_touch, (cx, cy), (45, 35), 0, 0, 360, (60, 40, 150), -1)
+
+    seg_touch = segment_meat(multi_touch)
+    print(f"  piece_count_estimate: {seg_touch.piece_count_estimate}  (expected >= 2)")
+    print(f"  likely_multiple_pieces: {seg_touch.likely_multiple_pieces}  (expected True)")
+    assert seg_touch.piece_count_estimate >= 2, (
+        f"Expected >= 2 pieces, got {seg_touch.piece_count_estimate}. "
+        "Consider lowering multi_piece_dist_threshold in config.yaml."
+    )
+    assert seg_touch.likely_multiple_pieces is True
+    print(f"  Result: {PASS}")
+    test2d_ok = True
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+    print(f"  Result: {FAIL}  — {e}")
+    test2d_ok = False
+
+# ────────────────────────────────────────────────────────────────────────────
 # Test 3: Live server end-to-end
 # ────────────────────────────────────────────────────────────────────────────
 section("TEST 3 — Live Server (uvicorn + HTTP POST)")
@@ -242,7 +329,9 @@ try:
     for key in ("filename", "label", "good_confidence", "spoiled_confidence", "decision", "box"):
         assert key in r, f"Missing key '{key}' in result"
     assert r["label"] in ("good", "spoiled"), f"Unexpected label: {r['label']}"
-    assert r["decision"] in ("discard", "grinding", "packing"), f"Unexpected decision: {r['decision']}"
+    assert r["decision"] in ("discard", "grinding", "packing", "needs_manual_review"), \
+        f"Unexpected decision: {r['decision']}"
+    assert "piece_count_estimate" in r, "Missing key 'piece_count_estimate' in result"
 
     print(f"  Schema validation: all required keys present")
     print(f"  Result: {PASS}")
@@ -276,9 +365,12 @@ finally:
 # Summary
 # ────────────────────────────────────────────────────────────────────────────
 section("SUMMARY")
-print(f"  Test 1 — Weight loading:        {'PASS' if test1_ok else 'FAIL'}")
-print(f"  Test 2 — Segmentation + size:   {'PASS' if test2_ok else 'FAIL'}")
-print(f"  Test 3 — Live server end-to-end:{'PASS' if test3_ok else 'FAIL'}")
-all_ok = test1_ok and test2_ok and test3_ok
+print(f"  Test 1  — Weight loading:          {'PASS' if test1_ok else 'FAIL'}")
+print(f"  Test 2  — Segmentation + size:     {'PASS' if test2_ok else 'FAIL'}")
+print(f"  Test 2b — Piece count (single):    {'PASS' if test2b_ok else 'FAIL'}")
+print(f"  Test 2c — Piece count (separated): {'PASS' if test2c_ok else 'FAIL'}")
+print(f"  Test 2d — Piece count (touching):  {'PASS' if test2d_ok else 'FAIL'}")
+print(f"  Test 3  — Live server end-to-end:  {'PASS' if test3_ok else 'FAIL'}")
+all_ok = test1_ok and test2_ok and test2b_ok and test2c_ok and test2d_ok and test3_ok
 print(f"\n  Overall: {'ALL TESTS PASSED' if all_ok else 'SOME TESTS FAILED'}")
 sys.exit(0 if all_ok else 1)

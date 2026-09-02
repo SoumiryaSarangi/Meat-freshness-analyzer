@@ -22,3 +22,10 @@ size_classifier:
   # relative to the total image area (0.0 – 1.0).  Above this = "big".
   # This is a rough heuristic — results are always marked size_method="estimated".
   fallback_area_threshold: 0.35
+
+  # Distance-transform sensitivity for multi-piece detection.
+  # 0.4 = moderate (tuned on synthetic test images only).
+  # ⚠️  Decrease (e.g. 0.3) to catch more subtle piece separations;
+  #     increase (e.g. 0.5) to reduce false positives on single pieces
+  #     with uneven surfaces.  Must be re-tuned against real tray photos.
+  multi_piece_dist_threshold: 0.4

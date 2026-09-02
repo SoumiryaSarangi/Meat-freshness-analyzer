@@ -22,6 +22,8 @@
       --good-glow:   rgba(63,185,80,0.25);
       --bad:         #f85149;
       --bad-glow:    rgba(248,81,73,0.25);
+      --review:      #f0a500;
+      --review-glow: rgba(240,165,0,0.25);
       --accent:      #e34040;
       --accent2:     #ff6b6b;
       --radius:      16px;
@@ -218,6 +220,10 @@
       border-color: var(--bad);
       box-shadow: 0 0 28px var(--bad-glow);
     }
+    .result-card.review {
+      border-color: var(--review);
+      box-shadow: 0 0 28px var(--review-glow);
+    }
     .result-card.error {
       border-color: var(--border);
       opacity: 0.7;
@@ -245,6 +251,7 @@
     }
     .verdict-badge.good  { background: rgba(63,185,80,0.18);  color: var(--good); }
     .verdict-badge.spoiled { background: rgba(248,81,73,0.18); color: var(--bad); }
+    .verdict-badge.review  { background: rgba(240,165,0,0.18); color: var(--review); }
     .confidence-pct {
       font-size: 1.1rem;
       font-weight: 700;
@@ -266,6 +273,7 @@
     }
     .conf-bar-fill.good    { background: var(--good); }
     .conf-bar-fill.spoiled { background: var(--bad); }
+    .conf-bar-fill.review  { background: var(--review); }
 
     .card-footer { display: flex; flex-direction: column; gap: 8px; }
     .decision-badge {
@@ -441,11 +449,50 @@
           <div class="card-header">
             <div class="card-filename" title="${r.filename}">${r.filename}</div>
           </div>
-          <div style="color:var(--bad);font-size:.9rem">⚠ ${r.error}</div>`;
+          <div style="color:var(--bad);font-size:.9rem">&#9888; ${r.error}</div>`;
         resultsGrid.appendChild(card);
         return;
       }
 
+      // ── Multi-piece tray: amber review card ──────────────────────────────
+      if (r.decision === 'needs_manual_review') {
+        const isGood = r.label === 'good';
+        const cls    = isGood ? 'good' : 'spoiled';
+        const pct    = isGood
+          ? (r.good_confidence * 100).toFixed(1)
+          : (r.spoiled_confidence * 100).toFixed(1);
+        const barPct = parseFloat(pct);
+        const countMsg = r.piece_count_estimate > 0
+          ? `~${r.piece_count_estimate} pieces detected`
+          : 'Multiple pieces detected';
+
+        card.className = 'result-card review';
+        card.style.animationDelay = `${i * 60}ms`;
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-filename" title="${r.filename}">${r.filename}</div>
+            <div class="verdict-row">
+              <span class="verdict-badge ${cls}">${r.label.toUpperCase()}</span>
+              <span class="confidence-pct ${cls}">${pct}%</span>
+            </div>
+          </div>
+          <div class="conf-bar-wrap">
+            <div class="conf-bar-fill ${cls}" style="width:${barPct}%"></div>
+          </div>
+          <div class="card-footer">
+            <div class="decision-badge" style="color:var(--review);border:1px solid rgba(240,165,0,0.3)">
+              <span class="icon">&#128269;</span>
+              MANUAL REVIEW
+            </div>
+            <div style="font-size:0.8rem;color:var(--review);margin-top:4px">
+              ${countMsg} &mdash; photograph one piece at a time for accurate sizing.
+            </div>
+          </div>`;
+        resultsGrid.appendChild(card);
+        return;
+      }
+
+      // ── Normal single-piece card (good / spoiled) ────────────────────────
       const isGood = r.label === 'good';
       const cls    = isGood ? 'good' : 'spoiled';
       const pct    = isGood
@@ -453,14 +500,14 @@
         : (r.spoiled_confidence * 100).toFixed(1);
       const barPct = parseFloat(pct);
 
-      const decisionIcons = { discard: '🗑️', grinding: '⚙️', packing: '📦' };
-      const decisionIcon  = decisionIcons[r.decision] || '→';
+      const decisionIcons = { discard: '&#128465;', grinding: '&#9881;', packing: '&#128230;' };
+      const decisionIcon  = decisionIcons[r.decision] || '->';
       const decisionLabel = r.decision ? r.decision.toUpperCase() : '—';
 
       const sizeBadge = r.size_method === 'measured'
-        ? `<span class="tag measured">📏 Size: Measured</span>`
+        ? `<span class="tag measured">&#128207; Size: Measured</span>`
         : r.size_method === 'estimated'
-        ? `<span class="tag estimated">〜 Size: Estimated</span>`
+        ? `<span class="tag estimated">&sim; Size: Estimated</span>`
         : '';
       const mmBadge = r.longest_dimension_mm != null
         ? `<span class="tag">${r.longest_dimension_mm} mm</span>`
