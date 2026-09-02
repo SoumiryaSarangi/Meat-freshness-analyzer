@@ -48,9 +48,16 @@ The retired conveyor code is preserved in `legacy/` for reference.
 - **`size_threshold_mm = 120`** is an unvalidated placeholder — treat size routing as indicative until confirmed against your actual product sizes.
 - **Accuracy figures are unverified against data leakage.** The 94.2% accuracy below was measured on a val split produced by `merge_datasets.py`, which does a plain random shuffle before splitting. If the source dataset contains near-duplicate frames (e.g. augmented copies of the same photo), some may land on both sides of the train/val boundary, inflating the reported accuracy. Treat these numbers as an upper bound pending a proper leakage audit.
 - **Validation was on cropped dataset images**, not on segmented crops from phone uploads. Real-world accuracy on arbitrary phone photos may differ.
-- **Multi-piece tray detection is a heuristic.** When the uploaded photo contains multiple pieces (e.g. a tray of diced chunks), the app automatically routes the batch to grinding instead of attempting a per-piece size measurement. The detection uses a distance-transform peak-counting algorithm — not an exact count — tuned using synthetic test images. The sensitivity threshold (`multi_piece_dist_threshold: 0.4` in `backend/config.yaml`) should be re-tuned against your own real tray photos before relying on it in production. Lower values (e.g. `0.3`) catch more subtle separations; higher values (e.g. `0.5`) reduce false positives on single pieces with uneven surfaces. True per-piece automatic measurement on tray photos is a larger future upgrade.
+- **Multi-piece tray detection is a distance-transform heuristic, not a real segmenter.** When the uploaded photo contains multiple pieces, the app skips per-piece size measurement and routes the batch straight to **grinding**. The detection uses distance-transform peak-counting on the GrabCut foreground mask. In practice this works well when pieces are clearly separated on a contrasting background, but has a known failure mode: **GrabCut can merge two or more nearby same-coloured pieces into a single foreground blob** when background contrast between them is low. When that happens, `estimate_piece_count()` sees only one peak and the image is processed as a single large piece (decision: `packing`) rather than the correct `grinding`. The sensitivity threshold (`multi_piece_dist_threshold: 0.4` in `backend/config.yaml`) controls detection sensitivity and must be re-tuned against your own real tray photos.
 
 ---
+
+## 🔭 Future Work
+
+- **Accurate multi-piece measurement requires a trained instance-segmentation model** (e.g. YOLOv8-seg or Mask R-CNN) rather than GrabCut. GrabCut is an unsupervised colour-model algorithm: it has no concept of object identity, so when two nearby pieces share similar colour and texture with low background contrast between them, it merges them into a single foreground blob — a failure that cannot be fixed by tuning thresholds alone. Reproducing this failure reliably requires: two large (~560×360 px) same-coloured ellipses placed ~40 px apart on a low-contrast background — under those conditions, piece-count estimation collapses from 2 to 1. Fixing it properly requires a real annotated dataset of production tray photos (individual piece masks, not just bounding boxes) before an instance-segmentation model is worth training.
+
+- **Data Augmentation :** The `scripts/train_classifier.py` script already uses PyTorch `transforms` to randomly flip, rotate, and colour-jitter images during training. To squeeze out another 1-2% accuracy, you can add `RandomCrop` and `GaussianBlur` to those transforms if your photos frequently suffer from motion blur or zoom inconsistencies.
+
 
 ## 📊 Model Performance (unverified — see caveat above)
 
@@ -240,7 +247,6 @@ size_classifier:
 - **Lighting matters more than model choice.** Inconsistent lighting will hurt the classifier far more than swapping architectures. Use fixed, diffuse, consistent-colour-temperature lighting.
 - **`good_confidence_threshold` is your safety dial.** Raising it discards more borderline pieces (safer) at the cost of more false rejects.
 - **Add your own photos!** Use `scripts/collect_data.py` to capture images from your camera and `scripts/merge_datasets.py` to mix them into the training set. This is the single biggest lever for accuracy on your specific setup.
-- **Data Augmentation (Future Scope):** The `scripts/train_classifier.py` script already uses PyTorch `transforms` to randomly flip, rotate, and colour-jitter images during training. To squeeze out another 1-2% accuracy, you can add `RandomCrop` and `GaussianBlur` to those transforms if your photos frequently suffer from motion blur or zoom inconsistencies.
 
 ---
 
