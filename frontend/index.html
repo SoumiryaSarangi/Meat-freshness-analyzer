@@ -508,6 +508,8 @@
         ? `<span class="tag measured">&#128207; Size: Measured</span>`
         : r.size_method === 'estimated'
         ? `<span class="tag estimated">&sim; Size: Estimated</span>`
+        : r.size_method === 'multiple_pieces_detected'
+        ? `<span class="tag estimated">&#127922; Multiple pieces (~${r.piece_count_estimate})</span>`
         : '';
       const mmBadge = r.longest_dimension_mm != null
         ? `<span class="tag">${r.longest_dimension_mm} mm</span>`

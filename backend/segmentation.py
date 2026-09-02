@@ -40,50 +40,57 @@ class SegmentationResult:
 
 
 def estimate_piece_count(mask: np.ndarray,
-                         dist_threshold: float = 0.4) -> int:
-    """Rough count of distinct 'lumps' within a foreground mask.
+                         min_blob_frac: float = 0.08) -> int:
+    """Count distinct meat pieces in a foreground mask.
 
-    Uses a distance-transform + peak-region technique (standard watershed-
-    marker approach).  Not exact — used only to flag likely multi-piece
-    photos, not to actually separate or measure individual pieces.
+    Uses morphological opening followed by connected-component labelling.
+    Morphological opening (erosion then dilation) removes thin ridges, plastic-
+    wrap creases, and GrabCut fringe artefacts that a single piece produces —
+    while preserving genuinely separate blobs that have visible gaps between them.
 
     Args:
-        mask:           Binary mask (uint8, 0/255) of the foreground region.
-        dist_threshold: Fraction of dist.max() above which a pixel is
-                        considered a distinct peak (default 0.4).
-                        ⚠️  This threshold controls sensitivity and WILL need
-                        tuning against real tray photos — the 0.4 default was
-                        chosen on synthetic test images only.  Lower values
-                        (e.g. 0.3) detect more subtle piece separations;
-                        higher values (e.g. 0.5) reduce false positives on
-                        single pieces with uneven surfaces.
-                        Adjust via config.yaml: multi_piece_dist_threshold.
+        mask:          Binary mask (uint8, 0/255) of the foreground region.
+        min_blob_frac: Minimum fraction of total foreground area a blob must
+                       occupy to be counted as a real piece (default 0.08 = 8%).
+                       Filters out small noise blobs and GrabCut slivers.
 
     Returns:
         Estimated number of distinct pieces (>= 0).
-        Returns 0 if the mask is empty or degenerate.
     """
     if mask is None or mask.sum() == 0:
         return 0
 
-    dist = cv2.distanceTransform(mask, cv2.DIST_L2, 5)
-    if dist.max() == 0:
-        return 0
+    h, w = mask.shape[:2]
+    # Opening kernel: ~3% of the shorter image dimension.
+    # Large enough to close plastic-wrap wrinkles; small enough to preserve
+    # the gap between genuinely separate pieces.
+    ksize = max(5, int(min(h, w) * 0.03) | 1)   # ensure odd
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (ksize, ksize))
+    opened = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
-    _, peaks = cv2.threshold(dist, dist_threshold * dist.max(), 255, 0)
-    peaks = peaks.astype(np.uint8)
-    num_labels, _ = cv2.connectedComponents(peaks)
-    return max(num_labels - 1, 0)  # subtract background label
+    if opened.sum() == 0:
+        return 1  # opening removed everything → treat as single small piece
+
+    total_fg = opened.sum() // 255
+
+    # Count connected components on the opened mask
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(opened, connectivity=8)
+
+    # Keep only blobs large enough to be real pieces (suppress noise slivers)
+    count = 0
+    for lbl in range(1, num_labels):   # skip background (label 0)
+        blob_area = stats[lbl, cv2.CC_STAT_AREA]
+        if blob_area >= min_blob_frac * total_fg:
+            count += 1
+
+    return max(count, 0)
 
 
-def segment_meat(image_bgr: np.ndarray,
-                 dist_threshold: float = 0.4) -> SegmentationResult:
+def segment_meat(image_bgr: np.ndarray) -> SegmentationResult:
     """Isolate the meat region from an uploaded photo.
 
     Args:
-        image_bgr:      Full uploaded image, BGR, any size.
-        dist_threshold: Sensitivity for piece-count estimation (see
-                        estimate_piece_count for full docs).
+        image_bgr: Full uploaded image, BGR, any size.
 
     Returns:
         SegmentationResult with the meat crop, its bounding box, the binary
@@ -108,7 +115,7 @@ def segment_meat(image_bgr: np.ndarray,
                     cv2.GC_INIT_WITH_RECT)
     except cv2.error:
         # Image too small or degenerate — fall back to whole image.
-        return _whole_image_fallback(image_bgr, dist_threshold)
+        return _whole_image_fallback(image_bgr)
 
     # Pixels labelled GC_FGD or GC_PR_FGD are foreground
     fg_mask = np.where((mask == cv2.GC_FGD) | (mask == cv2.GC_PR_FGD),
@@ -124,7 +131,7 @@ def segment_meat(image_bgr: np.ndarray,
     # Run before narrowing to the largest blob, so all individual lumps are
     # visible.  Using the largest blob alone would miss touching/separate pieces
     # that GrabCut correctly marks as foreground but connected-components splits.
-    count = estimate_piece_count(fg_mask, dist_threshold)
+    count = estimate_piece_count(fg_mask)
 
     # --- Connected components: keep ONLY the largest blob for bounding box ---
     num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(
@@ -132,7 +139,7 @@ def segment_meat(image_bgr: np.ndarray,
 
     if num_labels < 2:
         # No foreground components found
-        return _whole_image_fallback(image_bgr, dist_threshold)
+        return _whole_image_fallback(image_bgr)
 
     # Component 0 is background; find the largest foreground component
     largest_label = 1 + np.argmax(stats[1:, cv2.CC_STAT_AREA])
@@ -161,12 +168,11 @@ def segment_meat(image_bgr: np.ndarray,
     )
 
 
-def _whole_image_fallback(image_bgr: np.ndarray,
-                          dist_threshold: float = 0.4) -> SegmentationResult:
+def _whole_image_fallback(image_bgr: np.ndarray) -> SegmentationResult:
     """Return the entire image as the meat region when segmentation fails."""
     h, w = image_bgr.shape[:2]
     mask = np.full((h, w), 255, dtype=np.uint8)
-    count = estimate_piece_count(mask, dist_threshold)
+    count = estimate_piece_count(mask)
     return SegmentationResult(
         meat_crop=image_bgr.copy(),
         box=(0, 0, w, h),

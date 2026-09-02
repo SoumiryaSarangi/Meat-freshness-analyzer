@@ -40,10 +40,9 @@ def process_image(
         piece_count_estimate, box, segmentation_fallback.
     """
     size_cfg = cfg.get("size_classifier", {})
-    dist_threshold = float(size_cfg.get("multi_piece_dist_threshold", 0.4))
 
     # --- Step 1: Segment meat region ---
-    seg = segment_meat(image_bgr, dist_threshold=dist_threshold)
+    seg = segment_meat(image_bgr)
 
     # --- Step 2: Freshness classification on the meat crop ---
     freshness = classifier.classify(seg.meat_crop)
@@ -57,10 +56,12 @@ def process_image(
         longest_dimension_mm = None
 
     elif seg.likely_multiple_pieces:
-        # Multiple pieces detected: skip size routing, flag for manual review.
-        # Freshness is still reported normally — only size routing is bypassed.
-        decision = "needs_manual_review"
-        size_category = None
+        # Multiple pieces detected: individual pieces are diced/chopped chunks
+        # which are always grinding size.  Skip per-piece size measurement
+        # (not reliable without a reference card per piece) and route directly
+        # to grinding.  Freshness is still reported normally.
+        decision = "grinding"
+        size_category = "small"
         size_method = "multiple_pieces_detected"
         longest_dimension_mm = None
 
