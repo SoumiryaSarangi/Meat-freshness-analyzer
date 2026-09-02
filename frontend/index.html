@@ -463,10 +463,10 @@
           : (r.spoiled_confidence * 100).toFixed(1);
         const barPct = parseFloat(pct);
         const pieceTag = r.piece_count_estimate > 0
-          ? `<span class="tag" style="border-color:rgba(240,165,0,0.45);color:var(--review)">&#127922; ~${r.piece_count_estimate} pieces</span>`
-          : `<span class="tag" style="border-color:rgba(240,165,0,0.45);color:var(--review)">&#127922; Multiple pieces</span>`;
+          ? `<span class="tag" style="border-color:rgba(63,185,80,0.45);color:var(--good)">&#127922; ~${r.piece_count_estimate} pieces</span>`
+          : `<span class="tag" style="border-color:rgba(63,185,80,0.45);color:var(--good)">&#127922; Multiple pieces</span>`;
 
-        card.className = 'result-card review';
+        card.className = `result-card ${cls}`;
         card.style.animationDelay = `${i * 60}ms`;
         card.innerHTML = `
           <div class="card-header">
@@ -480,7 +480,7 @@
             <div class="conf-bar-fill ${cls}" style="width:${barPct}%"></div>
           </div>
           <div class="card-footer">
-            <div class="decision-badge" style="color:var(--review);border:1px solid rgba(240,165,0,0.3)">
+            <div class="decision-badge">
               <span class="icon">&#9881;</span>
               GRINDING
             </div>
