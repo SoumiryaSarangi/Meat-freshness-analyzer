@@ -7,7 +7,7 @@ Processes one uploaded image through the full chain:
     3. Size     — Reference-card or area-based size estimation
                   (SKIPPED if multiple pieces detected)
     4. Decide   — Map (label, size_category) -> routing decision
-                  Returns "needs_manual_review" for multi-piece trays.
+                  Routes multi-piece trays straight to grinding.
 
 Returns a single result dict per image, ready to be serialised to JSON.
 """
@@ -40,9 +40,10 @@ def process_image(
         piece_count_estimate, box, segmentation_fallback.
     """
     size_cfg = cfg.get("size_classifier", {})
+    dist_threshold = float(size_cfg.get("multi_piece_dist_threshold", 0.4))
 
     # --- Step 1: Segment meat region ---
-    seg = segment_meat(image_bgr)
+    seg = segment_meat(image_bgr, dist_threshold=dist_threshold)
 
     # --- Step 2: Freshness classification on the meat crop ---
     freshness = classifier.classify(seg.meat_crop)
@@ -56,12 +57,10 @@ def process_image(
         longest_dimension_mm = None
 
     elif seg.likely_multiple_pieces:
-        # Multiple pieces detected: individual pieces are diced/chopped chunks
-        # which are always grinding size.  Skip per-piece size measurement
-        # (not reliable without a reference card per piece) and route directly
-        # to grinding.  Freshness is still reported normally.
+        # Multiple pieces detected: skip per-piece size measurement and send
+        # straight to grinding.  Freshness is still reported normally.
         decision = "grinding"
-        size_category = "small"
+        size_category = None
         size_method = "multiple_pieces_detected"
         longest_dimension_mm = None
 

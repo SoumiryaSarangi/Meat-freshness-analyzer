@@ -24,9 +24,8 @@ size_classifier:
   fallback_area_threshold: 0.35
 
   # Distance-transform sensitivity for multi-piece detection.
-  # 0.2 = sensitive (tuned for touching/close diced chunks).
-  # ⚠️  Increase (e.g. 0.4) to reduce false positives on single pieces
-  #     with uneven or concave surfaces.
-  #     Decrease (e.g. 0.3) to catch more subtle piece separations;
-  #     Must be re-tuned against real tray photos for your specific setup.
-  multi_piece_dist_threshold: 0.3
+  # 0.4 = moderate (tuned on synthetic test images only).
+  # ⚠️  Decrease (e.g. 0.3) to catch more subtle piece separations;
+  #     increase (e.g. 0.5) to reduce false positives on single pieces
+  #     with uneven surfaces.  Must be re-tuned against real tray photos.
+  multi_piece_dist_threshold: 0.4

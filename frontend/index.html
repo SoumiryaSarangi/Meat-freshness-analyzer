@@ -454,8 +454,8 @@
         return;
       }
 
-      // ── Multi-piece tray: amber review card ──────────────────────────────
-      if (r.decision === 'needs_manual_review') {
+      // ── Multi-piece tray: amber grinding card ──────────────────────────────
+      if (r.decision === 'grinding' && r.likely_multiple_pieces) {
         const isGood = r.label === 'good';
         const cls    = isGood ? 'good' : 'spoiled';
         const pct    = isGood
@@ -481,11 +481,11 @@
           </div>
           <div class="card-footer">
             <div class="decision-badge" style="color:var(--review);border:1px solid rgba(240,165,0,0.3)">
-              <span class="icon">&#128269;</span>
-              MANUAL REVIEW
+              <span class="icon">&#9881;</span>
+              GRINDING
             </div>
             <div style="font-size:0.8rem;color:var(--review);margin-top:4px">
-              ${countMsg} &mdash; photograph one piece at a time for accurate sizing.
+              ${countMsg} &mdash; sent to grinding.
             </div>
           </div>`;
         resultsGrid.appendChild(card);
@@ -508,8 +508,6 @@
         ? `<span class="tag measured">&#128207; Size: Measured</span>`
         : r.size_method === 'estimated'
         ? `<span class="tag estimated">&sim; Size: Estimated</span>`
-        : r.size_method === 'multiple_pieces_detected'
-        ? `<span class="tag estimated">&#127922; Multiple pieces (~${r.piece_count_estimate})</span>`
         : '';
       const mmBadge = r.longest_dimension_mm != null
         ? `<span class="tag">${r.longest_dimension_mm} mm</span>`

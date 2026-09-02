@@ -329,7 +329,7 @@ try:
     for key in ("filename", "label", "good_confidence", "spoiled_confidence", "decision", "box"):
         assert key in r, f"Missing key '{key}' in result"
     assert r["label"] in ("good", "spoiled"), f"Unexpected label: {r['label']}"
-    assert r["decision"] in ("discard", "grinding", "packing", "needs_manual_review"), \
+    assert r["decision"] in ("discard", "grinding", "packing"), \
         f"Unexpected decision: {r['decision']}"
     assert "piece_count_estimate" in r, "Missing key 'piece_count_estimate' in result"
 
