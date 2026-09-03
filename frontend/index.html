@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Meat QC — Freshness Scanner</title>
+<title>Marbl — Freshness Scanner</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -56,12 +56,15 @@
   .cam-hint { font-size: 12px; color: var(--muted); text-align: center; }
   .cam-hint strong { color: var(--review); }
   
-  /* Capture Button styling for within content area (if needed, but moved to bottom bar) */
+  /* Capture Button */
   #capture-btn-inline {
-    background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); border-radius: 16px; padding: 14px;
-    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px;
+    background: var(--accent); color: #10130a; border: none; border-radius: 18px; padding: 16px;
+    font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 4px; transition: opacity 0.2s, transform 0.1s;
   }
+  #capture-btn-inline:hover:not(:disabled) { opacity: 0.9; transform: scale(0.99); }
+  #capture-btn-inline:active:not(:disabled) { transform: scale(0.97); }
   #capture-btn-inline:disabled { opacity: 0.5; cursor: not-allowed; }
+  #capture-btn-inline svg { width: 20px; height: 20px; stroke: #10130a; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
   /* Upload Dropzone */
   #drop-zone {
@@ -100,14 +103,17 @@
   .photo img { width: 100%; display: block; object-fit: contain; max-height: 500px; }
   .ann-unavailable { padding: 48px 24px; text-align: center; font-size: 13px; color: var(--muted); }
   
-  .pill { position: absolute; top: 12px; left: 12px; padding: 5px 12px; border-radius: 20px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.01em; display: flex; align-items: center; gap: 6px; z-index: 10; }
-  .pill.good { background: var(--good-dim); color: var(--good); }
-  .pill.spoiled { background: var(--spoiled-dim); color: var(--spoiled); }
-  .pill.review { background: var(--review-dim); color: var(--review); }
-  .pill i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  /* Motion & Loaders */
+  #flash-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: #fff; z-index: 200; pointer-events: none; opacity: 0; transition: opacity 0.12s ease-out; }
+  #flash-overlay.flash { opacity: 0.8; transition: none; }
+  
+  .skeleton-card { height: 320px; background: var(--surface); border-radius: 22px; border: 0.5px solid var(--line); overflow: hidden; position: relative; animation: fadeUp 0.3s ease both; margin-bottom: 16px; }
+  .skeleton-card::after { content: ''; position: absolute; top: 0; left: -100%; right: 0; bottom: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent); animation: shimmer 1.5s infinite; }
+  @keyframes shimmer { 100% { left: 100%; } }
 
-  .share { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(10,11,10,0.55); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: background 0.2s; z-index: 10; }
+  .share { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(10,11,10,0.55); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: background 0.2s, transform 0.1s; z-index: 10; }
   .share:hover { background: rgba(10,11,10,0.8); }
+  .share:active { transform: scale(0.94); }
   .share svg { width: 16px; height: 16px; stroke: var(--ink); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   
   .meta { display: flex; align-items: center; justify-content: space-between; padding: 16px; }
@@ -122,6 +128,7 @@
   .bottom { padding: 14px 16px 24px; background: linear-gradient(to top, var(--bg) 70%, transparent); position: sticky; bottom: 0; z-index: 100; }
   .scan-btn { width: 100%; background: var(--accent); color: #10130a; border: none; border-radius: 18px; padding: 16px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
   .scan-btn:hover:not(:disabled) { opacity: 0.9; transform: scale(0.99); }
+  .scan-btn:active:not(:disabled) { transform: scale(0.97); }
   .scan-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .scan-btn svg { width: 20px; height: 20px; stroke: #10130a; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   .upload-link { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; border: none; background: none; width: 100%; font-family: inherit; }
@@ -129,11 +136,12 @@
 </style>
 </head>
 <body>
+<div id="flash-overlay"></div>
 
 <div class="app-container">
   <div class="content">
     <header>
-      <div class="word">meat <span style="color:var(--good)">qc</span></div>
+      <div class="word">Mar<span style="color:var(--accent)">bl</span></div>
       <div class="mode-toggle" id="input-toggle">
         <span class="on" id="mode-cam-tab">camera</span>
         <span id="mode-up-tab">upload</span>
@@ -235,21 +243,35 @@
   function switchMode(mode) {
     if (activeMode === mode) return;
     activeMode = mode;
-    if (mode === 'camera') {
-      modeCamTab.classList.add('on');
-      modeUpTab.classList.remove('on');
-      dropZone.classList.remove('active-mode');
-      cameraPanel.style.display = 'flex';
-      galleryLink.style.display = 'block';
-      startCamera();
-    } else {
-      modeUpTab.classList.add('on');
-      modeCamTab.classList.remove('on');
-      cameraPanel.style.display = 'none';
-      dropZone.classList.add('active-mode');
-      galleryLink.style.display = 'none';
-      stopCamera();
-    }
+    
+    cameraPanel.style.transition = 'opacity 0.15s ease';
+    dropZone.style.transition = 'opacity 0.15s ease';
+    cameraPanel.style.opacity = '0';
+    dropZone.style.opacity = '0';
+
+    setTimeout(() => {
+      if (mode === 'camera') {
+        modeCamTab.classList.add('on');
+        modeUpTab.classList.remove('on');
+        dropZone.classList.remove('active-mode');
+        dropZone.style.display = 'none';
+        cameraPanel.style.display = 'flex';
+        galleryLink.style.display = 'block';
+        startCamera();
+      } else {
+        modeUpTab.classList.add('on');
+        modeCamTab.classList.remove('on');
+        cameraPanel.style.display = 'none';
+        dropZone.classList.add('active-mode');
+        dropZone.style.display = 'flex';
+        galleryLink.style.display = 'none';
+        stopCamera();
+      }
+      setTimeout(() => {
+        cameraPanel.style.opacity = '1';
+        dropZone.style.opacity = '1';
+      }, 20);
+    }, 150);
   }
 
   inputToggle.addEventListener('click', () => {
@@ -313,6 +335,11 @@
     if (!cameraStream) return;
     const vw = cameraVideo.videoWidth, vh = cameraVideo.videoHeight;
     if (!vw || !vh) return;
+    
+    const overlay = document.getElementById('flash-overlay');
+    overlay.classList.add('flash');
+    setTimeout(() => overlay.classList.remove('flash'), 80);
+
     cameraCanvas.width  = vw;
     cameraCanvas.height = vh;
     cameraCanvas.getContext('2d').drawImage(cameraVideo, 0, 0, vw, vh);
@@ -398,6 +425,12 @@
     previewStrip.style.display = 'none';
     // inputToggle stays visible
     galleryLink.style.display = 'none';
+    
+    // Show loading skeletons
+    resultsFeed.innerHTML = '';
+    for(let i = 0; i < selectedFiles.length; i++) {
+       resultsFeed.innerHTML += `<div class="skeleton-card" style="animation-delay: ${i*50}ms"></div>`;
+    }
 
     const fd = new FormData();
     selectedFiles.forEach(f => fd.append('files', f));
@@ -482,21 +515,10 @@
         confHtml = `estimated · ~${r.piece_count_estimate} pieces`;
       }
 
-      // Build overlay pill
-      let pillHtml = '';
-      if (r.decision === 'discard') {
-        pillHtml = `<div class="pill spoiled"><i></i>spoiled · ${Math.round((r.spoiled_confidence || 0) * 100)}%</div>`;
-      } else if (r.decision === 'needs_manual_review' || r.size_method === 'multiple_pieces_detected') {
-        pillHtml = `<div class="pill review"><i></i>review</div>`;
-      } else {
-        pillHtml = `<div class="pill good"><i></i>good · ${Math.round((r.good_confidence || 0) * 100)}%</div>`;
-      }
-
       // Photo Section
       let imgHTML = '';
       if (r.annotated_image_base64) {
         imgHTML = `<img src="${r.annotated_image_base64}" alt="Result" />
-                   ${pillHtml}
                    <button class="share download-btn" data-b64="${r.annotated_image_base64}" data-filename="${r.filename}">
                      <svg viewBox="0 0 24 24"><path d="M12 16V4M12 4L7 9M12 4l5 5M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
                    </button>`;
@@ -505,7 +527,6 @@
         if (queuedFile) {
           const thumbUrl = URL.createObjectURL(queuedFile);
           imgHTML = `<img src="${thumbUrl}" alt="Result" />
-                     ${pillHtml}
                      <div style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:6px; font-size:12px;">annotation unavailable</div>`;
         } else {
           imgHTML = `<div class="ann-unavailable">📷 No preview available</div>`;

@@ -1,4 +1,4 @@
-# Meat QC Pipeline
+# Marbl — Freshness Scanner
 
 Upload a photo of meat (from phone or laptop) and get an instant freshness verdict (**good** or **spoiled**) with confidence percentage, plus a routing decision (**discard** / **grinding** / **packing**) based on estimated size. Powered by a MobileNetV2 classifier trained on 3,300+ labeled images, served by a FastAPI backend with a mobile-first drag-and-drop UI.
 

@@ -20,8 +20,11 @@ Why reference-card instead of fixed pixels_per_mm?
 
 from dataclasses import dataclass
 
+import logging
 import cv2
 import numpy as np
+
+logger = logging.getLogger(__name__)
 
 
 CARD_WIDTH_MM = 85.60
@@ -132,10 +135,15 @@ def _detect_reference_card(
 
     best_area = 0
     best_ppm = None
+    total_image_area = image.shape[0] * image.shape[1]
+    min_area = total_image_area * 0.015
 
     for cnt in contours:
         if len(cnt) < 5:
             continue
+            
+        contour_area = cv2.contourArea(cnt)
+        
         rect = cv2.minAreaRect(cnt)
         (_, (rw, rh), _) = rect
         if rw == 0 or rh == 0:
@@ -144,11 +152,24 @@ def _detect_reference_card(
         long_side = max(rw, rh)
         short_side = min(rw, rh)
         aspect = long_side / short_side
+        rect_area = long_side * short_side
 
         if abs(aspect - CARD_ASPECT_RATIO) <= aspect_tolerance:
-            area = long_side * short_side
-            if area > best_area:
-                best_area = area
+            # Additional sanity checks to reject false positives:
+            # 1. Area must be reasonably large (at least 1.5% of image)
+            if rect_area < min_area:
+                logger.debug(f"Card candidate rejected: area {rect_area:.1f} too small (min {min_area:.1f})")
+                continue
+                
+            # 2. Solidity: the contour should fill most of its bounding rectangle (ID cards are solid rectangles)
+            # A perfect rectangle has solidity 1.0. We'll require > 0.80 to be safe with rounded corners/perspective.
+            solidity = contour_area / rect_area if rect_area > 0 else 0
+            if solidity < 0.80:
+                logger.debug(f"Card candidate rejected: solidity {solidity:.3f} < 0.80 (area={rect_area:.1f})")
+                continue
+
+            if rect_area > best_area:
+                best_area = rect_area
                 best_ppm = long_side / CARD_WIDTH_MM
 
     return best_ppm

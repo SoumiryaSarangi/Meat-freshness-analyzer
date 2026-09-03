@@ -28,4 +28,4 @@ size_classifier:
   # ⚠️  Decrease (e.g. 0.3) to catch more subtle piece separations;
   #     increase (e.g. 0.5) to reduce false positives on single pieces
   #     with uneven surfaces.  Must be re-tuned against real tray photos.
-  multi_piece_dist_threshold: 0.4
+  multi_piece_dist_threshold: 0.5
