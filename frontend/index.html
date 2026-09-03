@@ -53,6 +53,8 @@
   #camera-video { width: 100%; height: 100%; object-fit: cover; display: block; }
   #camera-canvas { display: none; }
   #camera-error { display: none; background: rgba(255,92,92,0.10); border: 1px solid rgba(255,92,92,0.30); border-radius: 12px; padding: 14px 16px; font-size: 13px; color: var(--spoiled); text-align: center; }
+  .cam-hint { font-size: 12px; color: var(--muted); text-align: center; }
+  .cam-hint strong { color: var(--review); }
   
   /* Capture Button styling for within content area (if needed, but moved to bottom bar) */
   #capture-btn-inline {
@@ -98,7 +100,13 @@
   .photo img { width: 100%; display: block; object-fit: contain; max-height: 500px; }
   .ann-unavailable { padding: 48px 24px; text-align: center; font-size: 13px; color: var(--muted); }
   
-  .share { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(10,11,10,0.55); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: background 0.2s; }
+  .pill { position: absolute; top: 12px; left: 12px; padding: 5px 12px; border-radius: 20px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 0.01em; display: flex; align-items: center; gap: 6px; z-index: 10; }
+  .pill.good { background: var(--good-dim); color: var(--good); }
+  .pill.spoiled { background: var(--spoiled-dim); color: var(--spoiled); }
+  .pill.review { background: var(--review-dim); color: var(--review); }
+  .pill i { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  .share { position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; border-radius: 50%; background: rgba(10,11,10,0.55); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: background 0.2s; z-index: 10; }
   .share:hover { background: rgba(10,11,10,0.8); }
   .share svg { width: 16px; height: 16px; stroke: var(--ink); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   
@@ -125,7 +133,7 @@
 <div class="app-container">
   <div class="content">
     <header>
-      <div class="word">meat qc</div>
+      <div class="word">meat <span style="color:var(--good)">qc</span></div>
       <div class="mode-toggle" id="input-toggle">
         <span class="on" id="mode-cam-tab">camera</span>
         <span id="mode-up-tab">upload</span>
@@ -139,6 +147,9 @@
       </div>
       <canvas id="camera-canvas"></canvas>
       <div id="camera-error"></div>
+      <div class="cam-hint">
+        <strong>Tip:</strong> place an ID card next to the meat for accurate size measurement.
+      </div>
       <button id="capture-btn-inline" type="button" disabled>
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
         capture photo
@@ -149,7 +160,7 @@
     <div id="drop-zone" role="button" tabindex="0">
       <div class="drop-icon">🥩</div>
       <div class="drop-title">Drop photos here</div>
-      <div class="drop-sub">or tap to choose from gallery<br>JPEG · PNG · up to 20 MB</div>
+      <div class="drop-sub">or tap to choose from gallery<br>JPEG · PNG · up to 20 MB<br><br><strong style="color:var(--review)">Tip:</strong> include an ID card next to the meat for accurate size.</div>
       <input id="file-input" type="file" accept="image/*" multiple />
     </div>
 
@@ -245,7 +256,23 @@
     switchMode(activeMode === 'camera' ? 'upload' : 'camera');
   });
 
-  galleryLink.addEventListener('click', () => switchMode('upload'));
+  galleryLink.addEventListener('click', () => {
+    if (resultsFeed.innerHTML !== '') {
+      // Reset if we are on the results view
+      selectedFiles = [];
+      renderPreviews();
+      resultsFeed.innerHTML = '';
+      summaryStrip.style.display = 'none';
+      scanAgainBtn.style.display = 'none';
+      checkBtn.style.display = 'none';
+      inputToggle.style.display = 'flex';
+      cameraPanel.style.display = 'none';
+      dropZone.style.display = 'flex';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    switchMode('upload');
+    fileInput.click();
+  });
 
   // ── Camera lifecycle ──────────────────────────────────────────────────────
   async function startCamera() {
@@ -369,7 +396,7 @@
     cameraPanel.style.display = 'none';
     dropZone.style.display = 'none';
     previewStrip.style.display = 'none';
-    inputToggle.style.display = 'none';
+    // inputToggle stays visible
     galleryLink.style.display = 'none';
 
     const fd = new FormData();
@@ -387,6 +414,7 @@
       checkBtn.disabled = false;
       checkBtn.style.display = 'none';
       scanAgainBtn.style.display = 'flex';
+      galleryLink.style.display = 'block';
     }
   });
 
@@ -447,17 +475,28 @@
       // Build Conf/Meta string (e.g. "measured · 68mm")
       let confHtml = '&nbsp;';
       if (r.size_method === 'measured' && r.longest_dimension_mm) {
-        confHtml = `measured · ${r.longest_dimension_mm}mm`;
+        confHtml = `measured · ${Math.round(r.longest_dimension_mm)}mm`;
       } else if (r.size_method === 'estimated' && r.longest_dimension_mm) {
-        confHtml = `estimated · ~${r.longest_dimension_mm}mm`;
+        confHtml = `estimated · ~${Math.round(r.longest_dimension_mm)}mm`;
       } else if (r.size_method === 'multiple_pieces_detected' && r.piece_count_estimate) {
         confHtml = `estimated · ~${r.piece_count_estimate} pieces`;
+      }
+
+      // Build overlay pill
+      let pillHtml = '';
+      if (r.decision === 'discard') {
+        pillHtml = `<div class="pill spoiled"><i></i>spoiled · ${Math.round((r.spoiled_confidence || 0) * 100)}%</div>`;
+      } else if (r.decision === 'needs_manual_review' || r.size_method === 'multiple_pieces_detected') {
+        pillHtml = `<div class="pill review"><i></i>review</div>`;
+      } else {
+        pillHtml = `<div class="pill good"><i></i>good · ${Math.round((r.good_confidence || 0) * 100)}%</div>`;
       }
 
       // Photo Section
       let imgHTML = '';
       if (r.annotated_image_base64) {
         imgHTML = `<img src="${r.annotated_image_base64}" alt="Result" />
+                   ${pillHtml}
                    <button class="share download-btn" data-b64="${r.annotated_image_base64}" data-filename="${r.filename}">
                      <svg viewBox="0 0 24 24"><path d="M12 16V4M12 4L7 9M12 4l5 5M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
                    </button>`;
@@ -466,6 +505,7 @@
         if (queuedFile) {
           const thumbUrl = URL.createObjectURL(queuedFile);
           imgHTML = `<img src="${thumbUrl}" alt="Result" />
+                     ${pillHtml}
                      <div style="position:absolute; bottom:12px; left:12px; background:rgba(0,0,0,0.6); padding:4px 8px; border-radius:6px; font-size:12px;">annotation unavailable</div>`;
         } else {
           imgHTML = `<div class="ann-unavailable">📷 No preview available</div>`;
