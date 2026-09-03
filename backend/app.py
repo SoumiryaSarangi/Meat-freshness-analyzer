@@ -54,12 +54,28 @@ def decode_upload_bytes(contents: bytes) -> np.ndarray | None:
         pil_img = Image.open(io.BytesIO(contents))
         pil_img = ImageOps.exif_transpose(pil_img)  # no-op if no EXIF orientation tag
         pil_img = pil_img.convert("RGB")
+        
+        # Resize huge gallery photos to speed up GrabCut (~20s -> ~0.2s)
+        # Size measurement is scale-invariant (relative to card or image area)
+        MAX_DIM = 1280
+        w, h = pil_img.size
+        if max(w, h) > MAX_DIM:
+            scale = MAX_DIM / max(w, h)
+            pil_img = pil_img.resize((int(w * scale), int(h * scale)), Image.BILINEAR)
+
         arr = np.array(pil_img)
         return cv2.cvtColor(arr, cv2.COLOR_RGB2BGR)
     except Exception:
         # Fall back to cv2 for any format PIL cannot open (e.g. corrupted)
         arr = np.frombuffer(contents, dtype=np.uint8)
-        return cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+        if img is not None:
+            h, w = img.shape[:2]
+            MAX_DIM = 1280
+            if max(w, h) > MAX_DIM:
+                scale = MAX_DIM / max(w, h)
+                img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_LINEAR)
+        return img
 
 # ---------------------------------------------------------------------------
 # Startup / shutdown

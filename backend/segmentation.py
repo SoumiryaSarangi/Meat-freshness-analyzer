@@ -92,6 +92,26 @@ def segment_meat(image_bgr: np.ndarray,
     h, w = image_bgr.shape[:2]
     total_pixels = h * w
 
+    # --- Heuristic: Detect macro / full-tray photos ---
+    # If the outer 5% border of the image is mostly red (meat-colored), it means
+    # the meat touches the edges. GrabCut will fail completely on these photos,
+    # cropping out a random clean patch and causing false "Good" hallucinations.
+    margin_pct = 0.05
+    border_mask = np.ones((h, w), dtype=np.uint8)
+    my, mx = int(h * margin_pct), int(w * margin_pct)
+    border_mask[my:h-my, mx:w-mx] = 0
+    border_pixels = image_bgr[border_mask == 1]
+    
+    if len(border_pixels) > 0:
+        border_hsv = cv2.cvtColor(border_pixels.reshape(-1, 1, 3), cv2.COLOR_BGR2HSV)
+        h_chan, s_chan, v_chan = border_hsv[:, 0, 0], border_hsv[:, 0, 1], border_hsv[:, 0, 2]
+        is_red = (((h_chan <= 20) | (h_chan >= 160)) & (s_chan > 40) & (v_chan > 40))
+        red_ratio = np.sum(is_red) / len(is_red)
+        
+        # If >20% of the border is meat-colored, this is a full-frame meat photo
+        if red_ratio > 0.20:
+            return _whole_image_fallback(image_bgr, dist_threshold)
+
     # --- GrabCut initial rect: 4% margin on every side ---
     margin_x = int(w * 0.04)
     margin_y = int(h * 0.04)
