@@ -3,30 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Meat QC — Quality Check</title>
-  <meta name="description" content="Upload meat photos to classify freshness, get routing decisions (discard / grinding / packing), and a confidence score." />
+  <title>Meat QC — Freshness Scanner</title>
+  <meta name="description" content="AI-powered meat freshness scanner. Point your camera or upload photos to get instant routing decisions." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:          #0d1117;
-      --surface:     #161b22;
-      --surface2:    #21262d;
-      --border:      #30363d;
-      --text:        #e6edf3;
-      --muted:       #8b949e;
-      --good:        #3fb950;
-      --good-glow:   rgba(63,185,80,0.25);
-      --bad:         #f85149;
-      --bad-glow:    rgba(248,81,73,0.25);
-      --review:      #f0a500;
-      --review-glow: rgba(240,165,0,0.25);
-      --accent:      #e34040;
-      --accent2:     #ff6b6b;
+      /* Core */
+      --bg:          #0A0B0A;
+      --surface:     #17191A;
+      --surface-2:   #1E2120;
+      --ink:         #F3F4F0;
+      --muted:       #8C948D;
+      --line:        #2A2D2A;
+
+      /* Verdicts */
+      --good:        #37E39A;
+      --good-dim:    #173B2C;
+      --spoiled:     #FF5C5C;
+      --spoiled-dim: #3D1919;
+      --review:      #FFC93C;
+      --review-dim:  #3D3112;
+
+      /* CTA only */
+      --accent:      #D6FF3F;
+      --accent-ink:  #0A0B0A;
+
       --radius:      16px;
+      --radius-sm:   10px;
     }
 
     html { scroll-behavior: smooth; }
@@ -34,121 +41,76 @@
     body {
       font-family: 'Inter', sans-serif;
       background: var(--bg);
-      color: var(--text);
+      color: var(--ink);
       min-height: 100dvh;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      /* bottom bar clearance */
+      padding-bottom: 112px;
     }
 
-    /* ── Header ── */
+    /* ── Header ─────────────────────────────────────────────────────── */
     header {
-      width: 100%;
-      padding: 24px 24px 0;
+      padding: 20px 20px 0;
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 6px;
+      justify-content: space-between;
     }
     .logo {
-      font-size: clamp(2rem, 7vw, 3rem);
-      font-weight: 800;
-      letter-spacing: -1px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.4rem;
+      letter-spacing: -0.5px;
     }
-    .logo span { color: var(--accent); }
-    .tagline {
-      font-size: 0.9rem;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-    }
+    .logo em { color: var(--good); font-style: normal; }
     .badge-model {
-      margin-top: 6px;
-      background: var(--surface2);
-      border: 1px solid var(--border);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
       border-radius: 99px;
-      font-size: 0.72rem;
-      padding: 3px 12px;
+      font-size: 0.68rem;
+      padding: 4px 10px;
       color: var(--muted);
     }
-    .badge-model strong { color: var(--good); }
 
-    /* ── Main container ── */
+    /* ── Main scroll area ───────────────────────────────────────────── */
     main {
-      width: 100%;
-      max-width: 640px;
-      padding: 28px 16px 80px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    /* ── Mode tabs ── */
-    .mode-tabs {
-      display: flex;
-      gap: 0;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      overflow: hidden;
-      background: var(--surface);
-    }
-    .mode-tab {
       flex: 1;
-      padding: 10px;
-      border: none;
-      background: transparent;
-      color: var(--muted);
-      font-family: inherit;
-      font-size: 0.85rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s, color 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-    }
-    .mode-tab.active {
-      background: var(--surface2);
-      color: var(--text);
-    }
-    .mode-tab:first-child { border-right: 1px solid var(--border); }
-
-    /* ── Upload zone ── */
-    #drop-zone {
-      border: 2px dashed var(--border);
-      border-radius: var(--radius);
-      background: var(--surface);
-      padding: 40px 24px;
       display: flex;
       flex-direction: column;
+      gap: 16px;
+      padding: 16px 16px 0;
+      max-width: 640px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* ── Upload/Camera toggle ────────────────────────────────────────── */
+    .input-toggle {
+      display: none; /* shown only when camera is available */
       align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: border-color 0.2s, background 0.2s, transform 0.15s;
-      user-select: none;
-    }
-    #drop-zone:hover, #drop-zone.drag-over {
-      border-color: var(--accent);
-      background: rgba(227, 64, 64, 0.06);
-      transform: scale(1.01);
-    }
-    .drop-icon { font-size: 2.8rem; }
-    .drop-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-    }
-    .drop-sub {
+      gap: 8px;
       font-size: 0.8rem;
       color: var(--muted);
-      text-align: center;
     }
-    #file-input { display: none; }
+    .input-toggle.visible { display: flex; }
+    .toggle-link {
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-family: inherit;
+      font-size: inherit;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .toggle-link:hover { color: var(--ink); }
+    .toggle-sep { color: var(--line); }
 
-    /* ── Camera panel ── */
+    /* ── Camera panel ───────────────────────────────────────────────── */
     #camera-panel {
-      display: none;
+      display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
     }
     .camera-viewport {
       position: relative;
@@ -165,49 +127,50 @@
       display: block;
     }
     #camera-canvas { display: none; }
-    .camera-hint {
-      font-size: 0.78rem;
-      color: var(--muted);
-      text-align: center;
-      padding: 0 8px;
-    }
-    .camera-hint strong { color: var(--review); }
     #camera-error {
       display: none;
-      background: rgba(248,81,73,0.12);
-      border: 1px solid rgba(248,81,73,0.35);
-      border-radius: 10px;
+      background: rgba(255,92,92,0.10);
+      border: 1px solid rgba(255,92,92,0.30);
+      border-radius: var(--radius-sm);
       padding: 14px 16px;
-      font-size: 0.85rem;
-      color: var(--bad);
+      font-size: 0.83rem;
+      color: var(--spoiled);
+      text-align: center;
+      line-height: 1.5;
+    }
+    .cam-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
       text-align: center;
     }
-    #capture-btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: var(--radius);
-      background: var(--surface2);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 1rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.15s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      border: 1px solid var(--border);
-    }
-    #capture-btn:hover:not(:disabled) {
-      background: var(--surface);
-      border-color: var(--accent);
-      transform: translateY(-1px);
-    }
-    #capture-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .cam-hint strong { color: var(--review); }
 
-    /* ── Thumbnail preview strip ── */
+    /* ── Upload dropzone ────────────────────────────────────────────── */
+    #drop-zone {
+      display: none; /* hidden initially; upload is secondary */
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      border: 2px dashed var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      padding: 36px 24px;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      text-align: center;
+      user-select: none;
+    }
+    #drop-zone.active-mode { display: flex; }
+    #drop-zone:hover, #drop-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(214,255,63,0.04);
+    }
+    .drop-icon { font-size: 2.4rem; }
+    .drop-title { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; }
+    .drop-sub { font-size: 0.75rem; color: var(--muted); line-height: 1.6; }
+    #file-input { display: none; }
+
+    /* ── Preview strip ───────────────────────────────────────────────── */
     #preview-strip {
       display: flex;
       flex-wrap: wrap;
@@ -215,342 +178,418 @@
     }
     .thumb-wrap {
       position: relative;
-      width: 72px;
-      height: 72px;
-      border-radius: 10px;
+      width: 64px; height: 64px;
+      border-radius: 8px;
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 1px solid var(--line);
       flex-shrink: 0;
     }
-    .thumb-wrap img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
+    .thumb-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .thumb-remove {
       position: absolute;
-      top: 3px; right: 3px;
-      width: 18px; height: 18px;
+      top: 2px; right: 2px;
+      width: 16px; height: 16px;
       border-radius: 50%;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,.75);
       border: none;
       color: #fff;
-      font-size: 0.65rem;
+      font-size: 0.55rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      line-height: 1;
     }
-    /* camera-sourced thumbnails get a small camera badge */
     .thumb-wrap.from-camera::after {
       content: '📷';
       position: absolute;
       bottom: 2px; left: 3px;
-      font-size: 0.6rem;
-      line-height: 1;
+      font-size: 0.55rem;
     }
 
-    /* ── Submit button ── */
-    #check-btn {
-      display: none;
-      width: 100%;
-      padding: 15px;
-      border: none;
-      border-radius: var(--radius);
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.15s;
-    }
-    #check-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
-    #check-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* ── Spinner ── */
+    /* ── Spinner ─────────────────────────────────────────────────────── */
     .spinner {
       display: none;
-      width: 32px; height: 32px;
-      border: 3px solid var(--border);
+      width: 28px; height: 28px;
+      border: 3px solid var(--line);
       border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-      margin: 0 auto;
+      animation: spin .7s linear infinite;
+      margin: 8px auto;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Results grid ── */
+    /* ── Results section ────────────────────────────────────────────── */
     #results-section { display: none; }
-    .results-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      letter-spacing: 1.2px;
-      color: var(--muted);
-      text-transform: uppercase;
-      margin-bottom: 12px;
-    }
-    #results-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+
+    /* Summary strip */
+    .summary-strip {
+      display: flex;
+      align-items: center;
       gap: 14px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      font-size: 0.78rem;
+    }
+    .summary-total {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+    .summary-dot {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+    }
+    .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot.good    { background: var(--good); }
+    .dot.spoiled { background: var(--spoiled); }
+    .dot.review  { background: var(--review); }
+
+    /* Results feed */
+    #results-feed {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    /* ── Result card ── */
+    /* ── Result card ─────────────────────────────────────────────────── */
     .result-card {
       border-radius: var(--radius);
       background: var(--surface);
-      padding: 20px;
-      border: 2px solid transparent;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      transition: transform 0.2s;
-      animation: fadeUp 0.35s ease both;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      animation: fadeUp .3s ease both;
+      transition: transform .2s;
     }
     .result-card:hover { transform: translateY(-2px); }
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(14px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .result-card.good {
-      border-color: var(--good);
-      box-shadow: 0 0 28px var(--good-glow);
+    .result-card.good    { border-color: rgba(55,227,154,.4); box-shadow: 0 0 24px rgba(55,227,154,.12); }
+    .result-card.spoiled { border-color: rgba(255,92,92,.4);  box-shadow: 0 0 24px rgba(255,92,92,.12); }
+    .result-card.review  { border-color: rgba(255,201,60,.4); box-shadow: 0 0 24px rgba(255,201,60,.12); }
+    .result-card.error   { opacity: .65; }
+
+    /* Card image */
+    .card-img-wrap {
+      width: 100%;
+      position: relative;
+      background: #000;
+      overflow: hidden;
     }
-    .result-card.spoiled {
-      border-color: var(--bad);
-      box-shadow: 0 0 28px var(--bad-glow);
+    .card-img-wrap img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+      max-height: 420px;
     }
-    .result-card.review {
-      border-color: var(--review);
-      box-shadow: 0 0 28px var(--review-glow);
-    }
-    .result-card.error {
-      border-color: var(--border);
-      opacity: 0.7;
+    .ann-unavailable {
+      padding: 48px 24px;
+      text-align: center;
+      font-size: .8rem;
+      color: var(--muted);
     }
 
-    .card-header { display: flex; flex-direction: column; gap: 4px; }
+    /* Card body */
+    .card-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
     .card-filename {
-      font-size: 0.72rem;
+      font-size: .68rem;
       color: var(--muted);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .verdict-row {
+    .card-meta-row {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 10px;
+      flex-wrap: wrap;
     }
-    .verdict-badge {
-      padding: 4px 14px;
-      border-radius: 99px;
-      font-size: 0.88rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-    }
-    .verdict-badge.good  { background: rgba(63,185,80,0.18);  color: var(--good); }
-    .verdict-badge.spoiled { background: rgba(248,81,73,0.18); color: var(--bad); }
-    .verdict-badge.review  { background: rgba(240,165,0,0.18); color: var(--review); }
-    .confidence-pct {
-      font-size: 1.1rem;
-      font-weight: 700;
-    }
-    .confidence-pct.good { color: var(--good); }
-    .confidence-pct.spoiled { color: var(--bad); }
 
-    /* Confidence bar */
-    .conf-bar-wrap {
-      height: 6px;
-      background: var(--surface2);
+    /* Decision pill */
+    .decision-pill {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: .82rem;
+      padding: 5px 13px;
       border-radius: 99px;
-      overflow: hidden;
-    }
-    .conf-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 0.6s ease;
-    }
-    .conf-bar-fill.good    { background: var(--good); }
-    .conf-bar-fill.spoiled { background: var(--bad); }
-    .conf-bar-fill.review  { background: var(--review); }
-
-    .card-footer { display: flex; flex-direction: column; gap: 8px; }
-    .decision-badge {
       display: inline-flex;
       align-items: center;
+      gap: 5px;
+    }
+    .decision-pill.discard  { background: var(--spoiled-dim); color: var(--spoiled); }
+    .decision-pill.grinding { background: var(--good-dim);    color: var(--good); }
+    .decision-pill.packing  { background: var(--good-dim);    color: var(--good); }
+    .decision-pill.review   { background: var(--review-dim);  color: var(--review); }
+
+    /* Size meta */
+    .size-meta {
+      font-size: .72rem;
+      color: var(--muted);
+      display: flex;
       gap: 6px;
-      padding: 7px 14px;
-      border-radius: 10px;
-      background: var(--surface2);
-      font-size: 0.85rem;
-      font-weight: 600;
-      width: fit-content;
+      flex-wrap: wrap;
     }
-    .decision-badge .icon { font-size: 1rem; }
+    .size-tag {
+      padding: 2px 8px;
+      border-radius: 5px;
+      border: 1px solid var(--line);
+    }
+    .size-tag.measured  { border-color: rgba(55,227,154,.35); color: var(--good); }
+    .size-tag.estimated { border-color: rgba(255,201,60,.35); color: var(--review); }
 
-    .size-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-    .tag {
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-size: 0.72rem;
-      font-weight: 500;
-      border: 1px solid var(--border);
+    /* Download btn */
+    .download-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
       color: var(--muted);
+      font-family: inherit;
+      font-size: .75rem;
+      padding: 6px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: color .15s, border-color .15s;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
-    .tag.measured { border-color: rgba(63,185,80,0.4); color: var(--good); }
-    .tag.estimated { border-color: rgba(255,200,0,0.4); color: #f0c040; }
+    .download-btn:hover { color: var(--ink); border-color: var(--ink); }
 
-    /* ── Footer ── */
-    footer {
-      margin-top: auto;
-      padding: 20px;
-      text-align: center;
-      font-size: 0.72rem;
-      color: var(--muted);
+    /* ── Sticky bottom bar ───────────────────────────────────────────── */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 12px 16px 20px;
+      background: linear-gradient(to top, var(--bg) 70%, transparent);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      z-index: 100;
     }
+    #check-btn, #scan-again-btn {
+      width: 100%;
+      max-width: 608px;
+      padding: 16px;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: var(--accent-ink);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: opacity .15s, transform .15s;
+    }
+    #check-btn:hover:not(:disabled),
+    #scan-again-btn:hover { opacity: .9; transform: translateY(-1px); }
+    #check-btn:disabled { opacity: .4; cursor: not-allowed; }
+    #scan-again-btn { display: none; }
+
+    .gallery-link {
+      font-size: .75rem;
+      color: var(--muted);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .gallery-link:hover { color: var(--ink); }
+
+    /* #check-btn hidden until files queued */
+    #check-btn { display: none; }
+
+    /* Capture btn (inside camera panel) */
+    #capture-btn {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      color: var(--ink);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: .95rem;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+    }
+    #capture-btn:hover:not(:disabled) { border-color: var(--accent); }
+    #capture-btn:disabled { opacity: .35; cursor: not-allowed; }
   </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Meat <span>QC</span></div>
-  <div class="tagline">AI-powered freshness classification</div>
-  <div class="badge-model">Model: <strong>MobileNetV2</strong> · 94.2% accuracy · 96.7% spoilage detection</div>
+  <div class="logo">Meat <em>QC</em></div>
+  <div class="badge-model">MobileNetV2 · 94.2% acc</div>
 </header>
 
 <main>
 
-  <!-- Mode tabs — camera tab only shown if getUserMedia is available -->
-  <div class="mode-tabs" id="mode-tabs" style="display:none">
-    <button class="mode-tab active" id="tab-upload" type="button">&#128444; Upload Photos</button>
-    <button class="mode-tab"        id="tab-camera" type="button">&#128247; Use Camera</button>
+  <!-- Input mode toggle (hidden until camera support confirmed) -->
+  <div class="input-toggle" id="input-toggle">
+    <span id="mode-label">📷 Camera</span>
+    <span class="toggle-sep">·</span>
+    <button class="toggle-link" id="mode-switch-btn" type="button">Switch to upload</button>
   </div>
 
-  <!-- Upload zone -->
-  <div id="drop-zone" role="button" tabindex="0" aria-label="Upload meat photos">
-    <div class="drop-icon">🥩</div>
-    <div class="drop-title">Drag &amp; drop photos here</div>
-    <div class="drop-sub">or tap to choose from your phone / laptop<br/>JPEG · PNG · up to 20 MB each<br/><br/>
-      <strong style="color:var(--review)">Tip:</strong> include an ID-1 card next to the meat for accurate size measurement.</div>
-    <input id="file-input" type="file" accept="image/*" multiple />
-  </div>
-
-  <!-- Camera panel -->
+  <!-- Camera panel (shown by default when supported) -->
   <div id="camera-panel">
     <div class="camera-viewport">
       <video id="camera-video" autoplay playsinline muted></video>
     </div>
     <canvas id="camera-canvas"></canvas>
     <div id="camera-error"></div>
-    <div class="camera-hint">
-      <strong>Tip:</strong> include an ID-1 card next to the meat for accurate size measurement.
-      Capture multiple pieces one at a time, then tap <em>Check Photos</em>.
+    <div class="cam-hint">
+      <strong>Tip:</strong> place an ID card next to the meat for accurate size measurement.
     </div>
-    <button id="capture-btn" type="button" disabled>&#128247; Capture</button>
+    <button id="capture-btn" type="button" disabled>📷 Capture Photo</button>
   </div>
 
-  <!-- Thumbnail previews — shared between both modes -->
+  <!-- Upload zone (hidden by default) -->
+  <div id="drop-zone" role="button" tabindex="0" aria-label="Upload meat photos">
+    <div class="drop-icon">🥩</div>
+    <div class="drop-title">Drop photos here</div>
+    <div class="drop-sub">or tap to choose from gallery<br/>JPEG · PNG · up to 20 MB<br/><br/>
+      <strong style="color:var(--review)">Tip:</strong> include an ID card next to the meat for accurate size.</div>
+    <input id="file-input" type="file" accept="image/*" multiple />
+  </div>
+
+  <!-- Shared thumbnail queue -->
   <div id="preview-strip"></div>
 
-  <!-- Submit -->
-  <button id="check-btn" type="button">&#128300; Check Photos</button>
-
-  <!-- Loading -->
+  <!-- Spinner -->
   <div class="spinner" id="spinner"></div>
 
   <!-- Results -->
   <section id="results-section">
-    <div class="results-title">Results</div>
-    <div id="results-grid"></div>
+    <div class="summary-strip" id="summary-strip"></div>
+    <div id="results-feed"></div>
   </section>
 
 </main>
 
-<footer>Meat QC Pipeline · Upload-based freshness analysis</footer>
+<!-- Sticky bottom bar -->
+<div class="bottom-bar">
+  <button id="check-btn" type="button">🔬 Analyse Photos</button>
+  <button id="scan-again-btn" type="button">📷 Scan Another</button>
+  <button class="gallery-link" id="gallery-link" type="button" style="display:none">or upload from gallery</button>
+</div>
 
 <script>
-  // ── State ──────────────────────────────────────────────────────────────────
+  // ── State ────────────────────────────────────────────────────────────────
   let selectedFiles = [];
-  let activeMode    = 'upload';   // 'upload' | 'camera'
-  let cameraStream  = null;       // active MediaStream or null
+  let activeMode    = 'camera';   // 'camera' | 'upload'
+  let cameraStream  = null;
 
-  // ── DOM refs ────────────────────────────────────────────────────────────────
-  const modeTabs      = document.getElementById('mode-tabs');
-  const tabUpload     = document.getElementById('tab-upload');
-  const tabCamera     = document.getElementById('tab-camera');
-  const dropZone      = document.getElementById('drop-zone');
-  const fileInput     = document.getElementById('file-input');
+  // ── DOM refs ─────────────────────────────────────────────────────────────
+  const inputToggle   = document.getElementById('input-toggle');
+  const modeLabel     = document.getElementById('mode-label');
+  const modeSwitchBtn = document.getElementById('mode-switch-btn');
   const cameraPanel   = document.getElementById('camera-panel');
   const cameraVideo   = document.getElementById('camera-video');
   const cameraCanvas  = document.getElementById('camera-canvas');
   const cameraError   = document.getElementById('camera-error');
   const captureBtn    = document.getElementById('capture-btn');
+  const dropZone      = document.getElementById('drop-zone');
+  const fileInput     = document.getElementById('file-input');
   const previewStrip  = document.getElementById('preview-strip');
-  const checkBtn      = document.getElementById('check-btn');
   const spinner       = document.getElementById('spinner');
-  const resultsSection = document.getElementById('results-section');
-  const resultsGrid   = document.getElementById('results-grid');
+  const resultsSection= document.getElementById('results-section');
+  const summaryStrip  = document.getElementById('summary-strip');
+  const resultsFeed   = document.getElementById('results-feed');
+  const checkBtn      = document.getElementById('check-btn');
+  const scanAgainBtn  = document.getElementById('scan-again-btn');
+  const galleryLink   = document.getElementById('gallery-link');
 
-  // ── Feature detection — show camera tab only when supported ────────────────
-  if (navigator.mediaDevices?.getUserMedia) {
-    modeTabs.style.display = 'flex';
+  // ── Feature-detect camera ────────────────────────────────────────────────
+  const hasCamera = !!navigator.mediaDevices?.getUserMedia;
+
+  if (hasCamera) {
+    inputToggle.classList.add('visible');
+    galleryLink.style.display = 'block';
+    // Camera is default — start immediately
+    startCamera();
+  } else {
+    // No camera: show upload zone as the only option
+    cameraPanel.style.display = 'none';
+    dropZone.classList.add('active-mode');
+    activeMode = 'upload';
   }
 
-  // ── Mode switching ──────────────────────────────────────────────────────────
-  tabUpload.addEventListener('click', () => switchMode('upload'));
-  tabCamera.addEventListener('click', () => switchMode('camera'));
+  // ── Mode switching ────────────────────────────────────────────────────────
+  modeSwitchBtn.addEventListener('click', () => {
+    switchMode(activeMode === 'camera' ? 'upload' : 'camera');
+  });
 
   function switchMode(mode) {
     if (activeMode === mode) return;
     activeMode = mode;
 
-    tabUpload.classList.toggle('active', mode === 'upload');
-    tabCamera.classList.toggle('active', mode === 'camera');
-
-    if (mode === 'upload') {
-      dropZone.style.display    = '';
-      cameraPanel.style.display = 'none';
-      stopCamera();
-    } else {
-      dropZone.style.display    = 'none';
+    if (mode === 'camera') {
+      modeLabel.textContent = '📷 Camera';
+      modeSwitchBtn.textContent = 'Switch to upload';
+      dropZone.classList.remove('active-mode');
       cameraPanel.style.display = 'flex';
+      galleryLink.style.display = 'block';
       startCamera();
+    } else {
+      modeLabel.textContent = '🗂 Upload';
+      modeSwitchBtn.textContent = 'Switch to camera';
+      cameraPanel.style.display = 'none';
+      dropZone.classList.add('active-mode');
+      galleryLink.style.display = 'none';
+      stopCamera();
     }
   }
 
-  // ── Camera lifecycle ────────────────────────────────────────────────────────
+  // ── Camera lifecycle ──────────────────────────────────────────────────────
   async function startCamera() {
     cameraError.style.display = 'none';
     captureBtn.disabled = true;
-
     try {
       cameraStream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: 'environment' } }
       });
       cameraVideo.srcObject = cameraStream;
-      // Wait for video metadata so canvas dimensions are correct
       await new Promise(resolve => {
         cameraVideo.onloadedmetadata = resolve;
-        // In case metadata already loaded
         if (cameraVideo.readyState >= 1) resolve();
       });
       captureBtn.disabled = false;
     } catch (err) {
       let msg = 'Camera error.';
-      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        msg = 'Camera permission denied. Please allow camera access in your browser settings and try again.';
-      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+      if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')
+        msg = 'Camera permission denied. Allow access in browser settings.';
+      else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError')
         msg = 'No camera found on this device.';
-      } else if (err.name === 'NotReadableError') {
-        msg = 'Camera is in use by another app. Close it and try again.';
-      } else if (location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-        msg = 'Camera requires a secure connection (HTTPS). Open this page over HTTPS or use localhost.';
-      } else {
+      else if (err.name === 'NotReadableError')
+        msg = 'Camera is in use by another app.';
+      else if (location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')
+        msg = 'Camera requires HTTPS. Use localhost or open over HTTPS.';
+      else
         msg = `Camera error: ${err.message}`;
-      }
       cameraError.textContent = msg;
       cameraError.style.display = 'block';
     }
@@ -558,69 +597,53 @@
 
   function stopCamera() {
     if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream.getTracks().forEach(t => t.stop());
       cameraStream = null;
     }
     cameraVideo.srcObject = null;
     captureBtn.disabled = true;
   }
 
-  // Stop camera if user navigates away
   window.addEventListener('pagehide', stopCamera);
 
-  // ── Capture ─────────────────────────────────────────────────────────────────
+  // ── Capture ───────────────────────────────────────────────────────────────
   captureBtn.addEventListener('click', () => {
     if (!cameraStream) return;
-
-    const vw = cameraVideo.videoWidth;
-    const vh = cameraVideo.videoHeight;
+    const vw = cameraVideo.videoWidth, vh = cameraVideo.videoHeight;
     if (!vw || !vh) return;
-
     cameraCanvas.width  = vw;
     cameraCanvas.height = vh;
     cameraCanvas.getContext('2d').drawImage(cameraVideo, 0, 0, vw, vh);
-
     cameraCanvas.toBlob(blob => {
-      const filename = `camera_capture_${Date.now()}.jpg`;
-      const file = new File([blob], filename, { type: 'image/jpeg' });
-      // Tag it as camera-sourced so the thumbnail shows a 📷 badge
+      const file = new File([blob], `camera_capture_${Date.now()}.jpg`, { type: 'image/jpeg' });
       file._fromCamera = true;
       addFiles([file]);
-
-      // Brief visual flash to confirm capture
-      captureBtn.textContent = '✔ Captured!';
-      captureBtn.disabled = true;
-      setTimeout(() => {
-        captureBtn.innerHTML = '&#128247; Capture';
-        captureBtn.disabled = false;
-      }, 700);
+      captureBtn.innerHTML = '✔ Captured!';
+      captureBtn.disabled  = true;
+      setTimeout(() => { captureBtn.innerHTML = '📷 Capture Photo'; captureBtn.disabled = false; }, 700);
     }, 'image/jpeg', 0.92);
   });
 
-  // ── File picking (upload mode) ───────────────────────────────────────────────
+  // ── Upload zone ───────────────────────────────────────────────────────────
   dropZone.addEventListener('click', () => fileInput.click());
   dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') fileInput.click(); });
-
-  fileInput.addEventListener('change', () => {
-    addFiles([...fileInput.files]);
-    fileInput.value = '';
-  });
-
-  // Drag & drop
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+  fileInput.addEventListener('change', () => { addFiles([...fileInput.files]); fileInput.value = ''; });
+  dropZone.addEventListener('dragover',  e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', ()  => dropZone.classList.remove('drag-over'));
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.classList.remove('drag-over');
     addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('image/')));
   });
 
-  // ── Shared file queue ────────────────────────────────────────────────────────
+  // gallery link in bottom bar = switch to upload mode
+  galleryLink.addEventListener('click', () => switchMode('upload'));
+
+  // ── Shared file queue ─────────────────────────────────────────────────────
   function addFiles(files) {
-    files.forEach(file => {
-      if (!selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
-        selectedFiles.push(file);
-      }
+    files.forEach(f => {
+      if (!selectedFiles.find(x => x.name === f.name && x.size === f.size))
+        selectedFiles.push(f);
     });
     renderPreviews();
   }
@@ -633,27 +656,36 @@
   function renderPreviews() {
     previewStrip.innerHTML = '';
     selectedFiles.forEach((file, idx) => {
-      const url = URL.createObjectURL(file);
+      const url  = URL.createObjectURL(file);
       const wrap = document.createElement('div');
       wrap.className = 'thumb-wrap' + (file._fromCamera ? ' from-camera' : '');
       wrap.innerHTML = `<img src="${url}" alt="${file.name}" />
-        <button class="thumb-remove" title="Remove" aria-label="Remove ${file.name}">&#10005;</button>`;
+        <button class="thumb-remove" title="Remove" aria-label="Remove ${file.name}">✕</button>`;
       wrap.querySelector('.thumb-remove').addEventListener('click', () => removeFile(idx));
       previewStrip.appendChild(wrap);
     });
-    checkBtn.style.display = selectedFiles.length ? 'block' : 'none';
+    checkBtn.style.display  = selectedFiles.length ? 'block' : 'none';
+    scanAgainBtn.style.display = 'none';
   }
 
-  // ── Submit — same path for upload and camera captures ───────────────────────
+  // ── Submit ────────────────────────────────────────────────────────────────
   checkBtn.addEventListener('click', submitFiles);
+  scanAgainBtn.addEventListener('click', () => {
+    selectedFiles = [];
+    renderPreviews();
+    resultsSection.style.display = 'none';
+    scanAgainBtn.style.display   = 'none';
+    checkBtn.style.display       = 'none';
+    // Switch back to camera if it was the active mode
+    if (hasCamera && activeMode === 'camera') startCamera();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
 
   async function submitFiles() {
     if (!selectedFiles.length) return;
-
-    checkBtn.disabled = true;
-    spinner.style.display = 'block';
+    checkBtn.disabled   = true;
+    spinner.style.display  = 'block';
     resultsSection.style.display = 'none';
-    resultsGrid.innerHTML = '';
 
     const fd = new FormData();
     selectedFiles.forEach(f => fd.append('files', f));
@@ -664,117 +696,151 @@
       const data = await resp.json();
       renderResults(data.results);
     } catch (err) {
-      resultsGrid.innerHTML = `<p style="color:var(--bad);padding:16px">Error: ${err.message}</p>`;
+      resultsFeed.innerHTML = `<p style="color:var(--spoiled);padding:16px">Error: ${err.message}</p>`;
       resultsSection.style.display = 'block';
     } finally {
       spinner.style.display = 'none';
-      checkBtn.disabled = false;
+      checkBtn.disabled     = false;
     }
   }
 
-  // ── Render results ──────────────────────────────────────────────────────────
+  // ── Render results ────────────────────────────────────────────────────────
   function renderResults(results) {
-    resultsGrid.innerHTML = '';
+    resultsFeed.innerHTML = '';
+
+    // Summary counts
+    let nGood = 0, nSpoiled = 0, nReview = 0;
+    results.forEach(r => {
+      if (r.error) return;
+      if (r.label === 'good' && r.size_method !== 'multiple_pieces_detected') nGood++;
+      else if (r.label === 'spoiled') nSpoiled++;
+      else if (r.size_method === 'multiple_pieces_detected' || r.decision === 'needs_manual_review') nReview++;
+      else nGood++;
+    });
+
+    summaryStrip.innerHTML = `
+      <span class="summary-total">${results.length} photo${results.length !== 1 ? 's' : ''}</span>
+      ${nGood    ? `<span class="summary-dot"><span class="dot good"></span>${nGood} good</span>` : ''}
+      ${nSpoiled ? `<span class="summary-dot"><span class="dot spoiled"></span>${nSpoiled} spoiled</span>` : ''}
+      ${nReview  ? `<span class="summary-dot"><span class="dot review"></span>${nReview} review</span>` : ''}
+    `;
 
     results.forEach((r, i) => {
       const card = document.createElement('div');
+      card.style.animationDelay = `${i * 50}ms`;
 
+      // Error case
       if (r.error) {
         card.className = 'result-card error';
-        card.style.animationDelay = `${i * 60}ms`;
         card.innerHTML = `
-          <div class="card-header">
-            <div class="card-filename" title="${r.filename}">${r.filename}</div>
-          </div>
-          <div style="color:var(--bad);font-size:.9rem">&#9888; ${r.error}</div>`;
-        resultsGrid.appendChild(card);
-        return;
-      }
-
-      // ── Multi-piece tray: amber grinding card ──────────────────────────────
-      if (r.size_method === 'multiple_pieces_detected') {
-        const isGood = r.label === 'good';
-        const cls    = isGood ? 'good' : 'spoiled';
-        const pct    = isGood
-          ? (r.good_confidence * 100).toFixed(1)
-          : (r.spoiled_confidence * 100).toFixed(1);
-        const barPct = parseFloat(pct);
-        const pieceTag = r.piece_count_estimate > 0
-          ? `<span class="tag" style="border-color:rgba(240,165,0,0.45);color:var(--review)">&#127922; ~${r.piece_count_estimate} pieces</span>`
-          : `<span class="tag" style="border-color:rgba(240,165,0,0.45);color:var(--review)">&#127922; Multiple pieces</span>`;
-
-        card.className = `result-card ${cls}`;
-        card.style.animationDelay = `${i * 60}ms`;
-        card.innerHTML = `
-          <div class="card-header">
-            <div class="card-filename" title="${r.filename}">${r.filename}</div>
-            <div class="verdict-row">
-              <span class="verdict-badge ${cls}">${r.label.toUpperCase()}</span>
-              <span class="confidence-pct ${cls}">${pct}%</span>
-            </div>
-          </div>
-          <div class="conf-bar-wrap">
-            <div class="conf-bar-fill ${cls}" style="width:${barPct}%"></div>
-          </div>
-          <div class="card-footer">
-            <div class="decision-badge">
-              <span class="icon">&#9881;</span>
-              GRINDING
-            </div>
-            <div class="size-tags">${pieceTag}</div>
+          <div class="card-body">
+            <div class="card-filename">${r.filename}</div>
+            <div style="color:var(--spoiled);font-size:.85rem">⚠ ${r.error}</div>
           </div>`;
-        resultsGrid.appendChild(card);
+        resultsFeed.appendChild(card);
         return;
       }
 
-      // ── Normal single-piece card (good / spoiled) ────────────────────────
-      const isGood = r.label === 'good';
-      const cls    = isGood ? 'good' : 'spoiled';
-      const pct    = isGood
-        ? (r.good_confidence * 100).toFixed(1)
-        : (r.spoiled_confidence * 100).toFixed(1);
-      const barPct = parseFloat(pct);
+      // Determine card class
+      let cardCls = r.label === 'spoiled' ? 'spoiled'
+        : (r.size_method === 'multiple_pieces_detected' || r.decision === 'needs_manual_review') ? 'review'
+        : 'good';
+      card.className = `result-card ${cardCls}`;
 
-      const decisionIcons = { discard: '&#128465;', grinding: '&#9881;', packing: '&#128230;' };
-      const decisionIcon  = decisionIcons[r.decision] || '->';
-      const decisionLabel = r.decision ? r.decision.toUpperCase() : '—';
+      // Accessible alt text baked from result data
+      const decisionLabel = r.decision ? r.decision.toUpperCase() : '';
+      const mmText = r.longest_dimension_mm ? `, ${r.longest_dimension_mm} mm` : '';
+      const piecesText = r.piece_count_estimate > 1 ? `, ~${r.piece_count_estimate} pieces` : '';
+      const altText = r.size_method === 'multiple_pieces_detected'
+        ? `${r.label}, ~${r.piece_count_estimate} pieces detected, routed to grinding`
+        : `${r.label}, ${Math.round((r.label === 'good' ? r.good_confidence : r.spoiled_confidence) * 100)}% confidence${mmText}, routed to ${r.decision}`;
 
-      const sizeBadge = r.size_method === 'measured'
-        ? `<span class="tag measured">&#128207; Size: Measured</span>`
+      // Image section
+      let imgHTML;
+      if (r.annotated_image_base64) {
+        imgHTML = `<div class="card-img-wrap">
+          <img src="${r.annotated_image_base64}" alt="${altText}" loading="lazy" />
+        </div>`;
+      } else {
+        // Find the queued file thumbnail as fallback
+        const queuedFile = selectedFiles.find(f => f.name === r.filename);
+        if (queuedFile) {
+          const thumbUrl = URL.createObjectURL(queuedFile);
+          imgHTML = `<div class="card-img-wrap">
+            <img src="${thumbUrl}" alt="${altText}" loading="lazy" />
+            <div style="position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.7);color:#aaa;font-size:.68rem;padding:3px 8px;border-radius:4px">annotation unavailable</div>
+          </div>`;
+        } else {
+          imgHTML = `<div class="card-img-wrap"><div class="ann-unavailable">📷 No preview available</div></div>`;
+        }
+      }
+
+      // Decision pill
+      const decisionIcons = { discard: '🗑', grinding: '⚙', packing: '📦', needs_manual_review: '🔍' };
+      const pillCls = r.decision === 'needs_manual_review' ? 'review'
+        : r.decision === 'discard' ? 'discard'
+        : r.decision === 'grinding' ? 'grinding'
+        : 'packing';
+      const pillLabel = r.size_method === 'multiple_pieces_detected'
+        ? '⚙ GRINDING (multi-piece)'
+        : `${decisionIcons[r.decision] || ''} ${decisionLabel}`;
+
+      // Size tags
+      const methodTag = r.size_method === 'measured'
+        ? `<span class="size-tag measured">📐 Measured</span>`
         : r.size_method === 'estimated'
-        ? `<span class="tag estimated">&sim; Size: Estimated</span>`
+        ? `<span class="size-tag estimated">~ Estimated</span>`
         : '';
-      const mmBadge = r.longest_dimension_mm != null
-        ? `<span class="tag">${r.longest_dimension_mm} mm</span>`
+      const mmTag = r.longest_dimension_mm != null
+        ? `<span class="size-tag">${r.longest_dimension_mm} mm</span>`
         : '';
-      const sizeTags = (sizeBadge || mmBadge)
-        ? `<div class="size-tags">${sizeBadge}${mmBadge}</div>` : '';
+      const pieceTag = r.piece_count_estimate > 0 && r.size_method === 'multiple_pieces_detected'
+        ? `<span class="size-tag" style="color:var(--review);border-color:rgba(255,201,60,.35)">🎲 ~${r.piece_count_estimate} pieces</span>`
+        : '';
+      const sizeMeta = (methodTag || mmTag || pieceTag)
+        ? `<div class="size-meta">${methodTag}${mmTag}${pieceTag}</div>` : '';
 
-      card.className = `result-card ${cls}`;
-      card.style.animationDelay = `${i * 60}ms`;
+      // Download button (only if annotated image is present)
+      const dlBtn = r.annotated_image_base64
+        ? `<button class="download-btn" data-b64="${r.annotated_image_base64}" data-filename="${r.filename}">
+            ⬇ Save
+          </button>`
+        : '';
+
       card.innerHTML = `
-        <div class="card-header">
+        ${imgHTML}
+        <div class="card-body">
           <div class="card-filename" title="${r.filename}">${r.filename}</div>
-          <div class="verdict-row">
-            <span class="verdict-badge ${cls}">${r.label.toUpperCase()}</span>
-            <span class="confidence-pct ${cls}">${pct}%</span>
+          <div class="card-meta-row">
+            <span class="decision-pill ${pillCls}">${pillLabel}</span>
+            ${dlBtn}
           </div>
-        </div>
-        <div class="conf-bar-wrap">
-          <div class="conf-bar-fill ${cls}" style="width:${barPct}%"></div>
-        </div>
-        <div class="card-footer">
-          <div class="decision-badge">
-            <span class="icon">${decisionIcon}</span>
-            ${decisionLabel}
-          </div>
-          ${sizeTags}
+          ${sizeMeta}
         </div>`;
 
-      resultsGrid.appendChild(card);
+      // Wire download button
+      const btn = card.querySelector('.download-btn');
+      if (btn) {
+        btn.addEventListener('click', () => {
+          const b64 = btn.dataset.b64.replace('data:image/jpeg;base64,', '');
+          const bin = atob(b64);
+          const arr = new Uint8Array(bin.length);
+          for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+          const blob = new Blob([arr], { type: 'image/jpeg' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = `annotated_${btn.dataset.filename.replace(/\.[^.]+$/, '')}.jpg`;
+          a.click();
+          URL.revokeObjectURL(a.href);
+        });
+      }
+
+      resultsFeed.appendChild(card);
     });
 
     resultsSection.style.display = 'block';
+    checkBtn.style.display        = 'none';
+    scanAgainBtn.style.display    = 'block';
     resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 </script>

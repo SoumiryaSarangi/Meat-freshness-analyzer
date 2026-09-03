@@ -13,6 +13,7 @@ Then open http://localhost:8000 in a browser, or from a phone on the same
 network: http://<your-machine-ip>:8000
 """
 
+import base64
 import io
 import os
 from pathlib import Path
@@ -28,6 +29,7 @@ from PIL import Image, ImageOps
 
 from freshness_classifier import FreshnessClassifier
 from pipeline import process_image
+from annotate import annotate_image
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -158,6 +160,19 @@ async def classify(files: list[UploadFile] = File(...)):
                 "error": f"Processing error: {exc}",
             })
             continue
+
+        # ── Annotate: draw results onto a resized copy of the image ──
+        try:
+            ann_bytes = annotate_image(image, result)
+            if ann_bytes is not None:
+                result["annotated_image_base64"] = (
+                    "data:image/jpeg;base64,"
+                    + base64.b64encode(ann_bytes).decode("ascii")
+                )
+            else:
+                result["annotated_image_base64"] = None
+        except Exception:
+            result["annotated_image_base64"] = None
 
         results.append(result)
 
