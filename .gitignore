@@ -18,6 +18,9 @@ models/*
 !models/freshness_classifier.pt
 !models/.gitkeep
 
+# Scratch / debug
+scratch/
+
 # IDEs
 .vscode/
 .idea/

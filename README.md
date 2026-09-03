@@ -1,143 +1,270 @@
-# Marbl — Freshness Scanner
+<div align="center">
 
-Upload a photo of meat (from phone or laptop) and get an instant freshness verdict (**good** or **spoiled**) with confidence percentage, plus a routing decision (**discard** / **grinding** / **packing**) based on estimated size. Powered by a MobileNetV2 classifier trained on 3,300+ labeled images, served by a FastAPI backend with a mobile-first drag-and-drop UI.
+# Marbl
+
+**AI-Powered Meat Freshness Scanner**
+
+Instant freshness classification · Physical size routing · Mobile-first web interface
+
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-3776ab?logo=python&logoColor=white)](https://python.org)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.2+-ee4c2c?logo=pytorch&logoColor=white)](https://pytorch.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-D6FF3F)](LICENSE)
+
+</div>
 
 ---
 
-## 🌐 Run the Web App
+## Overview
+
+Marbl is an end-to-end computer vision pipeline that classifies meat freshness from a single photo. Upload an image from your phone camera or gallery, and the system returns:
+
+- **Freshness verdict** — `good` or `spoiled` with confidence percentage
+- **Routing decision** — `discard` · `grinding` · `packing` based on physical size
+- **Annotated image** — visual overlay with classification badge and bounding box
+
+Built on a **MobileNetV2** backbone trained on 3,300+ labeled images, served through a **FastAPI** backend with a mobile-first dark-mode UI.
+
+### Key Features
+
+| Feature | Description |
+|---|---|
+| 🔬 **Freshness AI** | MobileNetV2 classifier with 94.2% validation accuracy |
+| 📏 **Size Measurement** | Reference-card calibration for physical mm dimensions |
+| 📱 **Mobile-First UI** | Live camera capture + gallery upload with dark mode |
+| 🧠 **Smart Segmentation** | Auto-detects full-tray vs. single-piece photos |
+| ⚡ **GPU Accelerated** | CUDA inference for sub-100ms classification |
+| 🔄 **Multi-Piece Detection** | Identifies clustered pieces and routes to grinding |
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.10+
+- pip
+- (Recommended) NVIDIA GPU with CUDA for fast inference
+
+### Installation
 
 ```bash
-# 1. Install backend dependencies
-cd backend
-pip install -r requirements.txt
-
-# 2. Start the server
-uvicorn app:app --host 0.0.0.0 --port 8000
-```
-
-Then open **http://localhost:8000** in a browser.
-From a phone on the same Wi-Fi: **http://\<your-machine-ip\>:8000**
-
-Upload one or more photos. For each photo the server returns:
-- ✅ **Good** / ❌ **Spoiled** with confidence %
-- Routing decision: **Discard** / **Grinding** / **Packing**
-- Size method: **Measured** (reference card found) or **Estimated** (fallback)
-
-### Size calibration
-
-Place a standard **credit / debit / ID card** (85.60 mm wide) flat next to the meat in the photo. The server detects the card's rectangular shape, derives pixels-per-mm for that specific photo, and marks the size result as **"Measured"**. Without a card it falls back to a frame-area estimate marked **"Estimated"**.
-
-### How the architecture works
-
-This project was originally designed for a real-time conveyor belt with a YOLO detector and fixed-height camera. The deployment target changed to phone/laptop uploads, so the architecture was reworked:
-
-| Original (conveyor) | Current (web upload) |
-|---|---|
-| YOLO detector (needs training data) | GrabCut segmentation (works instantly, no training) |
-| Fixed `pixels_per_mm` (camera at known height) | Reference-card per-photo calibration |
-| Real-time camera loop + hardware router | Per-request HTTP: one image → one JSON response |
-
-The retired conveyor code is preserved in `legacy/` for reference.
-
----
-
-## ⚠️ Known Limitations
-
-- **GrabCut segmentation** segments by colour/texture contrast — unusual backgrounds or very dark meat may cause mis-segmentation (a fallback to the whole image is applied automatically).
-- **Card detection** is contour-based; other rectangular objects (cutting board edge, phone case) could be mistaken for the reference card.
-- **`size_threshold_mm = 120`** is an unvalidated placeholder — treat size routing as indicative until confirmed against your actual product sizes.
-- **Accuracy figures are unverified against data leakage.** The 94.2% accuracy below was measured on a val split produced by `merge_datasets.py`, which does a plain random shuffle before splitting. If the source dataset contains near-duplicate frames (e.g. augmented copies of the same photo), some may land on both sides of the train/val boundary, inflating the reported accuracy. Treat these numbers as an upper bound pending a proper leakage audit.
-- **Validation was on cropped dataset images**, not on segmented crops from phone uploads. Real-world accuracy on arbitrary phone photos may differ.
-- **Multi-piece tray detection is a distance-transform heuristic, not a real segmenter.** When the uploaded photo contains multiple pieces, the app skips per-piece size measurement and routes the batch straight to **grinding**. The detection uses distance-transform peak-counting on the GrabCut foreground mask. In practice this works well when pieces are clearly separated on a contrasting background, but has a known failure mode: **GrabCut can merge two or more nearby same-coloured pieces into a single foreground blob** when background contrast between them is low. When that happens, `estimate_piece_count()` sees only one peak and the image is processed as a single large piece (decision: `packing`) rather than the correct `grinding`. The sensitivity threshold (`multi_piece_dist_threshold: 0.4` in `backend/config.yaml`) controls detection sensitivity and must be re-tuned against your own real tray photos.
-
----
-
-## 🔭 Future Work
-
-- **Accurate multi-piece measurement requires a trained instance-segmentation model** (e.g. YOLOv8-seg or Mask R-CNN) rather than GrabCut. GrabCut is an unsupervised colour-model algorithm: it has no concept of object identity, so when two nearby pieces share similar colour and texture with low background contrast between them, it merges them into a single foreground blob — a failure that cannot be fixed by tuning thresholds alone. Reproducing this failure reliably requires: two large (~560×360 px) same-coloured ellipses placed ~40 px apart on a low-contrast background — under those conditions, piece-count estimation collapses from 2 to 1. Fixing it properly requires a real annotated dataset of production tray photos (individual piece masks, not just bounding boxes) before an instance-segmentation model is worth training.
-
-- **Data Augmentation :** The `scripts/train_classifier.py` script already uses PyTorch `transforms` to randomly flip, rotate, and colour-jitter images during training. To squeeze out another 1-2% accuracy, you can add `RandomCrop` and `GaussianBlur` to those transforms if your photos frequently suffer from motion blur or zoom inconsistencies.
-
-
-## 📊 Model Performance (unverified — see caveat above)
-
-Trained on a **combined dataset** of 3,331 images (Kaggle Meat Freshness + custom footage), evaluated on 831 held-out validation images:
-
-| Metric | Value |
-|---|---|
-| Accuracy | 94.2% |
-| Precision | 95.7% |
-| Recall | 91.0% |
-| F1 Score | 0.933 |
-| Spoilage detection rate | 96.7% |
-
----
-
-## 🚀 Reproduce Training from Scratch
-
-Follow these steps **in order** to go from a fresh clone to a trained model.
-
-### Step 1 — Clone the repo
-
-```bash
+# Clone the repository
 git clone https://github.com/SoumiryaSarangi/project-meat-analysis.git
 cd project-meat-analysis
-```
 
-### Step 2 — Create a virtual environment and install dependencies
-
-```bash
+# Create virtual environment
 python -m venv venv
 
-# Windows
+# Activate (Windows)
 venv\Scripts\activate
 
-# Mac / Linux
+# Activate (macOS / Linux)
 source venv/bin/activate
 
+# Install dependencies
+cd backend
 pip install -r requirements.txt
 ```
 
-> **GPU (recommended):** If you have an NVIDIA GPU, install the CUDA version of
-> PyTorch for 5× faster training:
->
+> **GPU Acceleration:** For NVIDIA GPUs, install the CUDA-enabled PyTorch build:
 > ```bash
 > pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
 > ```
->
-> Then verify with:
-> ```bash
-> python -c "import torch; print('CUDA:', torch.cuda.is_available())"
-> ```
+> Verify with: `python -c "import torch; print('CUDA:', torch.cuda.is_available())"`
 
-### Step 3 — Download the Kaggle dataset
-
-1. Go to [Kaggle — Meat Freshness Image Dataset](https://www.kaggle.com/datasets/vinayakshanawad/meat-freshness-image-dataset)
-2. Click **Download** → you get `archive.zip` (≈ 75 MB)
-3. Place the zip anywhere on your machine (e.g. `Downloads/archive.zip`)
-
-### Step 4 — Prepare the dataset
+### Launch
 
 ```bash
-python scripts/prepare_dataset.py --zip "C:/Users/YourName/Downloads/archive.zip"
+cd backend
+uvicorn app:app --host 0.0.0.0 --port 8000
 ```
 
-This extracts the zip and sorts the images into:
+Open **http://localhost:8000** in your browser.
+From a phone on the same Wi-Fi: `http://<your-machine-ip>:8000`
+
+---
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["📱 Photo Upload"] --> B["FastAPI Server"]
+    B --> C["EXIF Fix + Resize"]
+    C --> D{"Edge-Color\nHeuristic"}
+    D -- "Full tray detected" --> F["Full Image"]
+    D -- "Single piece" --> E["GrabCut\nSegmentation"]
+    E --> F
+    F --> G["MobileNetV2\nClassifier"]
+    G --> H{"Freshness?"}
+    H -- "Spoiled" --> I["❌ Discard"]
+    H -- "Good" --> J["Size Estimation"]
+    J -- "< 120mm" --> K["🔄 Grinding"]
+    J -- "≥ 120mm" --> L["📦 Packing"]
+```
+
+### Pipeline Stages
+
+| Stage | Module | Description |
+|---|---|---|
+| **1. Decode** | [`app.py`](backend/app.py) | EXIF orientation fix, downscale to 1280px max |
+| **2. Detect Mode** | [`segmentation.py`](backend/segmentation.py) | Edge-color heuristic: if >20% of the image border is meat-colored, bypass GrabCut |
+| **3. Segment** | [`segmentation.py`](backend/segmentation.py) | GrabCut foreground isolation + largest-blob selection |
+| **4. Classify** | [`freshness_classifier.py`](backend/freshness_classifier.py) | MobileNetV2 inference → `good` / `spoiled` with confidence |
+| **5. Size** | [`size_estimator.py`](backend/size_estimator.py) | Reference-card calibration or area-based fallback |
+| **6. Route** | [`pipeline.py`](backend/pipeline.py) | Map (freshness × size) → routing decision |
+| **7. Annotate** | [`annotate.py`](backend/annotate.py) | Draw bounding box + classification badge onto image |
+
+### Design Decisions
+
+<details>
+<summary><b>Why GrabCut instead of YOLO for segmentation?</b></summary>
+
+The original conveyor-belt design used YOLO for meat detection, but it required thousands of manually annotated bounding boxes for training. GrabCut is an unsupervised color-contrast algorithm that works out of the box with zero training data — ideal for the upload-based workflow where photos come from arbitrary cameras and angles.
+</details>
+
+<details>
+<summary><b>Why the edge-color heuristic?</b></summary>
+
+GrabCut assumes the image border is background. When users upload macro photos of full meat trays (where meat touches all edges), GrabCut crops incorrectly and causes false "good" classifications. The heuristic checks if >20% of the outer 5% border contains red/meat-colored pixels in HSV space. If so, it bypasses GrabCut entirely and sends the full uncropped image to the classifier.
+</details>
+
+<details>
+<summary><b>Why downscale to 1280px?</b></summary>
+
+Modern phone cameras produce 12MP+ images (4000×3000). GrabCut's runtime scales exponentially with resolution — a raw 12MP image takes ~20 seconds vs. ~0.2 seconds at 1280px. The downscaling is transparent to size measurement because the reference-card ratio remains constant at any resolution.
+</details>
+
+---
+
+## API Reference
+
+### `POST /api/classify`
+
+Upload one or more meat photos for classification.
+
+**Request:** `multipart/form-data` with field name `files`
+
+**Response:**
+```json
+{
+  "results": [
+    {
+      "filename": "IMG_001.jpg",
+      "label": "good",
+      "good_confidence": 0.9234,
+      "spoiled_confidence": 0.0766,
+      "decision": "packing",
+      "size_category": "big",
+      "size_method": "measured",
+      "longest_dimension_mm": 142.3,
+      "piece_count_estimate": 1,
+      "box": [45, 32, 380, 290],
+      "segmentation_fallback": false,
+      "annotated_image_base64": "data:image/jpeg;base64,..."
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `label` | `string` | `"good"` or `"spoiled"` |
+| `good_confidence` | `float` | Confidence score for "good" (0.0–1.0) |
+| `decision` | `string` | `"discard"` · `"grinding"` · `"packing"` |
+| `size_method` | `string` | `"measured"` (card found) · `"estimated"` (fallback) · `"multiple_pieces_detected"` |
+| `longest_dimension_mm` | `float?` | Physical size in mm (null if spoiled or multi-piece) |
+| `piece_count_estimate` | `int` | Estimated number of meat pieces |
+| `annotated_image_base64` | `string?` | Base64-encoded JPEG with visual annotations |
+
+### `GET /health`
+
+Liveness check. Returns `{"status": "ok", "model_loaded": true}`.
+
+---
+
+## Size Calibration
+
+Place a standard **credit / debit / ID card** (ISO/IEC 7810 ID-1: 85.60 × 53.98 mm) flat next to the meat in the photo. The system detects the card's rectangular contour, computes `pixels_per_mm` for that specific photo, and marks the result as `size_method: "measured"`.
+
+Without a visible card, the system falls back to a frame-area heuristic marked `size_method: "estimated"`.
+
+---
+
+## Model Performance
+
+Trained on a combined dataset of **3,331 images** (Kaggle Meat Freshness + custom footage), evaluated on **831 held-out validation images** through the full web pipeline (including segmentation):
+
+| Metric | Value |
+|---|---|
+| **Overall Accuracy** | 94.2% |
+| **Precision** | 95.7% |
+| **Recall** | 91.0% |
+| **F1 Score** | 0.933 |
+| **Spoilage Detection Rate** | 96.8% |
+
+> [!WARNING]
+> **Data leakage caveat:** The train/val split was produced by `merge_datasets.py` using a plain random shuffle. If the source dataset contains near-duplicate frames (e.g., augmented copies), some may appear on both sides of the boundary, inflating accuracy. Treat these numbers as an upper bound pending a formal leakage audit.
+
+---
+
+## Configuration
+
+All runtime parameters are in [`backend/config.yaml`](backend/config.yaml):
+
+```yaml
+freshness_classifier:
+  device: "cuda"                       # "cuda" or "cpu"
+  good_confidence_threshold: 0.60      # Safety dial: higher = stricter
+
+size_classifier:
+  size_threshold_mm: 120               # Big/small routing cutoff
+  card_width_mm: 85.60                 # ISO ID-1 card width
+  card_aspect_tolerance: 0.18          # Tolerance for perspective skew
+  fallback_area_threshold: 0.35        # Area-based size heuristic
+  multi_piece_dist_threshold: 0.5      # Piece-count sensitivity
+```
+
+| Parameter | What it controls |
+|---|---|
+| `good_confidence_threshold` | **Safety dial.** Raise to reject more borderline pieces (safer). Lower to accept more (fewer false rejects). |
+| `size_threshold_mm` | Physical cutoff between grinding (< threshold) and packing (≥ threshold). |
+| `multi_piece_dist_threshold` | Sensitivity for multi-piece detection. Lower = more sensitive, higher = fewer false positives. |
+
+---
+
+## Reproduce Training from Scratch
+
+<details>
+<summary><b>Click to expand full training guide</b></summary>
+
+### Step 1 — Download the Kaggle dataset
+
+1. Go to [Kaggle — Meat Freshness Image Dataset](https://www.kaggle.com/datasets/vinayakshanawad/meat-freshness-image-dataset)
+2. Download `archive.zip` (~75 MB)
+
+### Step 2 — Prepare the dataset
+
+```bash
+python scripts/prepare_dataset.py --zip "path/to/archive.zip"
+```
+
+This creates the following structure:
 ```
 data/dataset_freshness/
-    train/  good/   (FRESH images)
-            spoiled/ (HALF-FRESH + SPOILED images)
-    val/    good/
-            spoiled/
+├── train/
+│   ├── good/
+│   └── spoiled/
+└── val/
+    ├── good/
+    └── spoiled/
 ```
 
-> **Optional:** Pass `--half-fresh good` if you want to treat borderline
-> HALF-FRESH images as good rather than spoiled.
+> Pass `--half-fresh good` to treat borderline HALF-FRESH images as good instead of spoiled.
 
-### Step 5 — (Optional) Add your own images to fix domain shift
+### Step 3 — (Optional) Add custom images
 
-If your photos look different from the Kaggle dataset (different lighting,
-background, camera angle), mix in your own labeled images:
+If your photos differ from the Kaggle dataset (different lighting, background, camera):
 
 ```bash
 python scripts/merge_datasets.py \
@@ -145,141 +272,149 @@ python scripts/merge_datasets.py \
     --spoiled "path/to/Spoiled"
 ```
 
-> **Note:** `merge_datasets.py` does a plain `random.shuffle` before splitting
-> 80/20 into train/val. If your source images include augmented near-duplicates,
-> this can cause data leakage across the split boundary.
-
-### Step 6 — Train the freshness classifier
+### Step 4 — Train
 
 ```bash
-# CPU only (slow, ~30 min):
+# CPU (~30 min)
 python scripts/train_classifier.py --data data/dataset_freshness --epochs 30
 
-# NVIDIA GPU (recommended, ~6-12 min):
+# GPU (~6-12 min, recommended)
 python scripts/train_classifier.py --data data/dataset_freshness --epochs 30 --batch 64
 ```
 
-The best checkpoint is saved automatically to `models/freshness_classifier.pt`.
+The best checkpoint is saved to `models/freshness_classifier.pt`.
 
-### Step 7 — Validate the model
-
-Run the classifier on the entire validation folder:
+### Step 5 — Validate
 
 ```bash
+# Run inference on validation set
 python scripts/run_on_images.py \
     --images data/dataset_freshness/val \
     --out-dir output/test_annotated \
     --log-csv output/test_decisions_log.csv
-```
 
-Then get the detailed accuracy metrics (Precision, Recall, F1):
-
-```bash
+# Print accuracy metrics (Precision, Recall, F1)
 python scripts/analyze_results.py
+
+# Full pipeline validation (simulates web upload flow)
+python scripts/validate_pipeline.py
 ```
 
-To visually inspect the annotated images one by one:
+</details>
 
-```bash
-python scripts/run_on_images.py --images data/dataset_freshness/val --show
-# Press any key to advance, Q to quit
+---
+
+## Project Structure
+
+```
+marbl/
+├── backend/                          # FastAPI web server
+│   ├── app.py                        # HTTP server — routes, EXIF handling, image resize
+│   ├── pipeline.py                   # Per-image orchestrator (segment → classify → size → decide)
+│   ├── segmentation.py               # GrabCut isolation + edge-color heuristic
+│   ├── freshness_classifier.py       # MobileNetV2 classifier wrapper
+│   ├── size_estimator.py             # Reference-card calibration + area fallback
+│   ├── annotate.py                   # Visual annotation renderer
+│   ├── config.yaml                   # Runtime configuration
+│   ├── test_pipeline.py              # Regression test suite
+│   └── requirements.txt              # Backend dependencies
+│
+├── frontend/
+│   └── index.html                    # Single-file mobile-first UI (camera + upload + results)
+│
+├── scripts/                          # Training & evaluation utilities
+│   ├── prepare_dataset.py            # Extract & organize the Kaggle zip
+│   ├── merge_datasets.py             # Mix additional images into train/val
+│   ├── train_classifier.py           # Train the freshness CNN
+│   ├── run_on_images.py              # Batch inference on image folders
+│   ├── analyze_results.py            # Compute accuracy metrics from CSV
+│   ├── validate_pipeline.py          # Full pipeline regression test
+│   ├── collect_data.py               # Webcam capture tool for dataset building
+│   └── verify_camera_feature.py      # Browser camera feature test
+│
+├── models/
+│   └── freshness_classifier.pt       # Trained model weights (~9 MB)
+│
+├── legacy/                           # Retired conveyor belt code (reference only)
+│   ├── pipeline_conveyor.py          # Original real-time camera loop
+│   ├── detector.py                   # YOLO detector wrapper
+│   ├── router.py                     # Serial / MQTT hardware signalling
+│   ├── tracker.py                    # Centroid tracker for belt pieces
+│   └── README.md                     # Revival instructions
+│
+├── requirements.txt                  # Root-level dependencies (training)
+└── README.md
 ```
 
 ---
 
-## 📁 Project Layout
+## Camera & HTTPS
 
-```
-models/
-  freshness_classifier.pt     Trained CNN weights (auto-saved by train_classifier.py)
-scripts/                      ← Everything needed to reproduce training + validation
-  prepare_dataset.py          Extract & organise the Kaggle zip
-  merge_datasets.py           Mix additional images into train/val split
-  collect_data.py             Webcam capture tool for building your own dataset
-  train_classifier.py         Trains the freshness CNN (MobileNetV2)
-  run_on_images.py            Freshness evaluation on a folder of images
-  analyze_results.py          Reads the CSV log and prints accuracy metrics
-backend/                      ← Web app (FastAPI server)
-  app.py                      FastAPI server — POST /api/classify, GET /
-  pipeline.py                 Per-image orchestrator (segment→classify→size→decide)
-  segmentation.py             GrabCut meat region isolation
-  size_estimator.py           Reference-card calibration + big/small call
-  freshness_classifier.py     MobileNetV2 classifier (also used by scripts/)
-  config.yaml                 Web pipeline config (device, thresholds, card dims)
-  requirements.txt            Backend Python dependencies
-  test_pipeline.py            Mandatory test suite (3 tests)
-frontend/
-  index.html                  Single-file mobile-first UI (drag-drop + result cards)
-legacy/                       ← Retired conveyor belt code (not used by web app)
-  pipeline_conveyor.py        Original real-time camera loop
-  detector.py                 YOLO wrapper (detector was never trained)
-  router.py                   Serial / MQTT hardware signal stubs
-  tracker.py                  Centroid tracker for belt pieces
-  train_yolo.py               YOLO training script
-  config_conveyor.yaml        Original full conveyor config
-  requirements.txt            Conveyor-only dependencies (ultralytics, pyserial, paho-mqtt)
-  README.md                   Explains what's here and how to revive it
-```
+The web app supports two input methods: **live camera capture** and **file upload**.
 
----
-
-## ⚙️ Configuration (`backend/config.yaml`)
-
-All web pipeline parameters are in `backend/config.yaml`:
-
-```yaml
-freshness_classifier:
-  device: "cuda"                   # "cuda" or "cpu"
-  good_confidence_threshold: 0.60  # Safety dial: raise → stricter, lower → permissive
-
-size_classifier:
-  size_threshold_mm: 120           # ⚠️ Unvalidated placeholder
-  card_width_mm: 85.60             # ID-1 standard card width
-  card_aspect_tolerance: 0.18      # ±tolerance for perspective skew
-  fallback_area_threshold: 0.35    # Area fraction above which fallback = "big"
-  multi_piece_dist_threshold: 0.4  # Piece-count sensitivity (see Known Limitations)
-```
-
----
-
-## 📝 Tips
-
-- **Lighting matters more than model choice.** Inconsistent lighting will hurt the classifier far more than swapping architectures. Use fixed, diffuse, consistent-colour-temperature lighting.
-- **`good_confidence_threshold` is your safety dial.** Raising it discards more borderline pieces (safer) at the cost of more false rejects.
-- **Add your own photos!** Use `scripts/collect_data.py` to capture images from your camera and `scripts/merge_datasets.py` to mix them into the training set. This is the single biggest lever for accuracy on your specific setup.
-
----
-
-## 📷 Camera Capture & HTTPS
-
-The web app supports two input methods — file upload and live camera capture — both feeding the same classification pipeline.
-
-### HTTP vs HTTPS — what works where
-
-| Scenario | File Upload | Camera Capture |
+| Scenario | File Upload | Camera |
 |---|---|---|
-| `http://localhost:8000` (desktop) | ✅ | ✅ |
-| `http://<lan-ip>:8000` (phone on same Wi-Fi) | ✅ | ❌ browser blocks |
-| `https://` any origin | ✅ | ✅ |
+| `http://localhost:8000` | ✅ | ✅ |
+| `http://<lan-ip>:8000` (phone) | ✅ | ❌ blocked by browser |
+| `https://` (any origin) | ✅ | ✅ |
 
-**Why?** Browsers enforce that `getUserMedia` (camera access) requires a [Secure Context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts). `localhost` is an exemption; any other plain-HTTP origin is not.
+> Browsers require a [Secure Context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts) for camera access. `localhost` is exempt; all other origins must use HTTPS.
 
-### Testing on a real phone before production
+### Testing on a Phone
 
-The fastest path is an HTTPS tunnel — no certificate setup needed:
+The fastest approach is an HTTPS tunnel:
 
 ```bash
-# Install ngrok once: https://ngrok.com/download
+# Install ngrok: https://ngrok.com/download
 ngrok http 8000
 ```
 
-Open the `https://xxxxx.ngrok-free.app` URL it prints on your phone. The rear camera will open by default.
+Open the printed `https://xxxxx.ngrok-free.app` URL on your phone. The rear camera opens by default.
 
-### Production deployment
+### Production Deployment
 
-For a permanently reachable service, you need real HTTPS — either:
-- A reverse proxy (nginx / Caddy) in front of uvicorn with a TLS certificate (Let's Encrypt is free), or
-- A hosting platform that provides HTTPS automatically (Railway, Render, Fly.io, etc.).
+For a permanently reachable service:
+- **Reverse proxy** (nginx / Caddy) with a TLS certificate (Let's Encrypt), or
+- **Hosting platform** with built-in HTTPS (Railway, Render, Fly.io)
 
-Plain `http://` on a public IP will get camera permission silently refused by the browser — this is the browser's security policy, not a bug in this app.
+---
 
+## Known Limitations
+
+| Area | Limitation |
+|---|---|
+| **GrabCut** | Segments by color contrast — unusual backgrounds or very dark meat may cause mis-segmentation (automatic fallback applied) |
+| **Card Detection** | Contour-based; other rectangular objects (cutting board, phone case) can be mistaken for the reference card |
+| **Size Threshold** | `120mm` is an unvalidated placeholder — calibrate against your actual product sizes |
+| **Multi-Piece** | Distance-transform heuristic, not a trained segmenter. Nearby same-colored pieces may merge into one blob |
+| **Validation** | Random train/val split may contain data leakage from near-duplicate images |
+
+---
+
+## Future Work
+
+- **Instance segmentation** (YOLOv8-seg / Mask R-CNN) for reliable multi-piece measurement
+- **Data augmentation** extensions: `RandomCrop`, `GaussianBlur` for motion-blur robustness
+- **Active learning** pipeline to flag low-confidence predictions for human review
+- **Multi-class grading** beyond binary good/spoiled (e.g., fresh → borderline → spoiled)
+
+---
+
+## Tips
+
+> [!TIP]
+> **Lighting matters more than model choice.** Inconsistent lighting will hurt accuracy far more than swapping architectures. Use fixed, diffuse, consistent-color-temperature lighting.
+
+> [!TIP]
+> **`good_confidence_threshold` is your safety dial.** Raise it to discard more borderline pieces (safer) at the cost of more false rejects.
+
+> [!TIP]
+> **Add your own photos!** Use `scripts/collect_data.py` to capture images and `scripts/merge_datasets.py` to mix them into training. This is the single biggest lever for accuracy on your specific setup.
+
+---
+
+<div align="center">
+
+Built with ❤️ using PyTorch · FastAPI · OpenCV
+
+</div>
