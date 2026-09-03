@@ -9,7 +9,7 @@ WORKDIR /app
 COPY backend/requirements.txt .
 
 # Install dependencies (CPU-only PyTorch to save space, since most cheap hosting doesn't have GPUs)
-RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
+RUN pip install --no-cache-dir torch torchvision --extra-index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
