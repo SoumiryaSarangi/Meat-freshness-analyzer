@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Marbl — Desktop</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link href="/static/tokens.css" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #0d0e0d;
+      font-family: 'Inter', sans-serif;
+      color: var(--ink);
+    }
+
+    .app {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .word {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 26px;
+    }
+
+    .word span {
+      color: var(--accent);
+    }
+
+    nav {
+      display: flex;
+      gap: 28px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 36px;
+      padding: 40px 0 60px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 22px;
+      position: sticky;
+      top: 40px;
+    }
+
+    .drop {
+      border: 1.5px dashed var(--line);
+      border-radius: 12px;
+      padding: 44px 20px;
+      text-align: center;
+      transition: border-color .15s;
+      cursor: pointer;
+    }
+
+    .drop.drag-over,
+    .drop:hover {
+      border-color: var(--accent);
+      background: rgba(214, 255, 63, 0.04);
+    }
+
+    .drop .emoji {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    .drop h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      margin: 0 0 6px;
+      font-weight: 700;
+    }
+
+    .drop p {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .drop .paste {
+      margin-top: 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .drop .paste kbd {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: inherit;
+    }
+
+    .cta {
+      width: 100%;
+      background: var(--accent);
+      color: #10130a;
+      border: none;
+      border-radius: 10px;
+      padding: 14px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      margin-top: 16px;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+
+    .cta:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
+    .cta:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .cta:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .preview-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .thumb-wrap {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 0.5px solid var(--line);
+    }
+
+    .thumb-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .thumb-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.7);
+      border: none;
+      color: #fff;
+      font-size: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stats {
+      margin-top: 22px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    .stats h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--muted);
+      font-weight: 600;
+      margin: 0 0 14px;
+    }
+
+    .stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 0;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity .15s;
+      user-select: none;
+    }
+
+    .stat-row:hover {
+      opacity: 0.8;
+    }
+
+    .stat-row .n {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .results-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .results-head h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .results-head span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    .card.good:hover {
+      border-color: var(--good);
+      background-color: var(--good-dim);
+    }
+
+    .card.spoiled:hover {
+      border-color: var(--spoiled);
+      background-color: var(--spoiled-dim);
+    }
+
+    .card.review:hover {
+      border-color: var(--review);
+      background-color: var(--review-dim);
+    }
+
+    .photo {
+      position: relative;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .photo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .share {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(10, 11, 10, 0.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity .15s;
+      border: none;
+      cursor: pointer;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .card:hover .share {
+      opacity: 1;
+    }
+
+    .share:hover {
+      background: rgba(10, 11, 10, 0.8);
+    }
+
+    .share svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 1.8;
+    }
+
+    .meta {
+      padding: 11px 13px;
+      font-size: 12.5px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+    }
+
+    .meta .route {
+      color: var(--ink);
+      font-weight: 500;
+    }
+
+    .card.spoiled .meta .route {
+      color: var(--spoiled);
+    }
+
+    .card.review .meta .route {
+      color: var(--review);
+    }
+
+    .spinner {
+      width: 30px;
+      height: 30px;
+      border: 3px solid var(--line);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 40px auto;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .skeleton-card {
+      aspect-ratio: 4/3;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .skeleton-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      100% {
+        left: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header>
+      <div class="word">Mar<span>bl</span></div>
+    </header>
+
+    <div class="layout">
+      <div class="panel">
+        <div class="drop" id="drop-zone">
+          <div class="emoji">🥩</div>
+          <h3>Drop photos here</h3>
+          <p>or click to browse · JPEG, PNG</p>
+          <div class="paste">or paste from clipboard — <kbd>Ctrl</kbd>+<kbd>V</kbd></div>
+          <input type="file" id="file-input" accept="image/*" multiple style="display:none">
+        </div>
+
+        <div class="preview-strip" id="preview-strip"></div>
+
+        <button class="cta" id="cta-btn" disabled>Select photos to scan</button>
+
+        <div class="stats">
+          <h4>This batch</h4>
+          <div class="stat-row" data-filter="good"><span><i class="dot"
+                style="background:var(--good)"></i>Good</span><span class="n" id="stat-good">&mdash;</span></div>
+          <div class="stat-row" data-filter="spoiled"><span><i class="dot"
+                style="background:var(--spoiled)"></i>Spoiled</span><span class="n" id="stat-spoiled">&mdash;</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="results">
+        <div class="results-head">
+          <h2>Results</h2>
+          <span id="results-hint">Awaiting photos...</span>
+        </div>
+        <div id="spinner-container" style="display:none">
+          <div class="spinner"></div>
+        </div>
+        <div class="grid" id="grid">
+          <!-- Results render here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { classifyImages, downloadAnnotatedImage } from '/static/shared.js';
+
+    let queue = [];
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+    const previewStrip = document.getElementById('preview-strip');
+    const ctaBtn = document.getElementById('cta-btn');
+    const grid = document.getElementById('grid');
+    const spinnerContainer = document.getElementById('spinner-container');
+    const resultsHint = document.getElementById('results-hint');
+
+    // Drag and drop + click
+    dropZone.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', () => { addFiles([...fileInput.files]); fileInput.value = ''; });
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      addFiles([...e.dataTransfer.files].filter(f => f.type.startsWith('image/')));
+    });
+
+    // Paste
+    document.addEventListener('paste', e => {
+      const files = [...(e.clipboardData?.items || [])]
+        .filter(i => i.type.startsWith('image/'))
+        .map(i => i.getAsFile())
+        .filter(Boolean);
+      if (files.length) addFiles(files);
+    });
+
+    // Filter Logic
+    let currentFilter = null;
+    document.querySelectorAll('.stat-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const filter = row.dataset.filter;
+        currentFilter = currentFilter === filter ? null : filter;
+        applyFilter();
+      });
+    });
+
+    function applyFilter() {
+      document.querySelectorAll('.stat-row').forEach(r => {
+        r.style.opacity = (!currentFilter || r.dataset.filter === currentFilter) ? '1' : '0.3';
+      });
+
+      document.querySelectorAll('.card').forEach(card => {
+        if (card.classList.contains('skeleton-card')) return;
+        if (!currentFilter || card.classList.contains(currentFilter) || (currentFilter === 'spoiled' && card.classList.contains('error'))) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    function addFiles(files) {
+      files.forEach(f => {
+        if (!queue.find(x => x.name === f.name && x.size === f.size)) queue.push(f);
+      });
+      renderQueue();
+    }
+
+    function removeFile(idx) {
+      queue.splice(idx, 1);
+      renderQueue();
+    }
+
+    function renderQueue() {
+      previewStrip.innerHTML = '';
+      queue.forEach((file, idx) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'thumb-wrap';
+        wrap.innerHTML = `<img src="${URL.createObjectURL(file)}"><button class="thumb-remove">✕</button>`;
+        wrap.querySelector('.thumb-remove').addEventListener('click', () => removeFile(idx));
+        previewStrip.appendChild(wrap);
+      });
+
+      if (queue.length > 0) {
+        ctaBtn.disabled = false;
+        ctaBtn.textContent = `Check ${queue.length} photo${queue.length !== 1 ? 's' : ''}`;
+      } else {
+        ctaBtn.disabled = true;
+        ctaBtn.textContent = 'Select photos to scan';
+      }
+    }
+
+    // API Call
+    ctaBtn.addEventListener('click', async () => {
+      if (!queue.length) return;
+
+      ctaBtn.disabled = true;
+      ctaBtn.textContent = 'Analyzing...';
+      grid.innerHTML = '';
+
+      // Skeletons
+      for (let i = 0; i < queue.length; i++) {
+        grid.innerHTML += `<div class="skeleton-card" style="animation-delay:${i * 50}ms"></div>`;
+      }
+
+      try {
+        const results = await classifyImages(queue);
+        renderResults(results);
+      } catch (err) {
+        grid.innerHTML = `<p style="color:var(--spoiled)">Error: ${err.message}</p>`;
+      } finally {
+        spinnerContainer.style.display = 'none';
+        renderQueue(); // restore CTA button text
+      }
+    });
+
+    function renderResults(results) {
+      grid.innerHTML = '';
+
+      let nGood = 0, nSpoiled = 0;
+      results.forEach(r => {
+        if (r.error) return;
+        if (r.decision === 'discard') nSpoiled++;
+        else nGood++;
+      });
+
+      document.getElementById('stat-good').textContent = nGood;
+      document.getElementById('stat-spoiled').textContent = nSpoiled;
+      resultsHint.textContent = `${results.length} photo${results.length !== 1 ? 's' : ''}`;
+
+      results.forEach((r, i) => {
+        const card = document.createElement('div');
+
+        if (r.error) {
+          card.className = 'card spoiled';
+          card.innerHTML = `<div style="padding:20px; color:var(--spoiled)">⚠ ${r.error} (${r.filename})</div>`;
+          grid.appendChild(card);
+          return;
+        }
+
+        let cls = r.decision === 'discard' ? 'spoiled' :
+          r.decision === 'needs_manual_review' ? 'review' : 'good';
+
+        card.className = `card ${cls}`;
+
+        // Routing
+        let routeHtml = '';
+        if (r.decision === 'discard') routeHtml = `discard`;
+        else if (r.decision === 'packing') routeHtml = `big → packing`;
+        else if (r.decision === 'grinding') {
+          if (r.size_method === 'multiple_pieces_detected') routeHtml = `multi-piece → grinding`;
+          else routeHtml = `small → grinding`;
+        } else if (r.decision === 'needs_manual_review') routeHtml = `needs review`;
+
+        // Meta
+        let confHtml = '&nbsp;';
+        if (r.size_method === 'measured' && r.longest_dimension_mm) confHtml = `~${Math.round(r.longest_dimension_mm)}mm`;
+        else if (r.size_method === 'estimated' && r.longest_dimension_mm) confHtml = `~${Math.round(r.longest_dimension_mm)}mm <span style="font-size:0.85em; opacity:0.6">(est.)</span>`;
+        else if (r.size_method === 'multiple_pieces_detected' && r.piece_count_estimate) confHtml = `~${r.piece_count_estimate} pcs`;
+
+        const confPct = cls === 'good' ? Math.round(r.good_confidence * 100) : Math.round(r.spoiled_confidence * 100);
+
+        let imgHTML = `<div style="color:var(--muted);font-size:12px">No image</div>`;
+        if (r.annotated_image_base64) {
+          imgHTML = `<img src="${r.annotated_image_base64}">
+                   <button class="share download-btn" data-b64="${r.annotated_image_base64}" data-filename="${r.filename}" title="Download">
+                     <svg viewBox="0 0 24 24"><path d="M12 16V4M12 4L7 9M12 4l5 5M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
+                   </button>`;
+        }
+
+        card.innerHTML = `
+        <div class="photo ${cls}">
+          ${imgHTML}
+        </div>
+        <div class="meta">
+          <span class="route">${routeHtml}</span>
+          <span>${confHtml}</span>
+        </div>
+      `;
+
+        // Download
+        const dlBtn = card.querySelector('.download-btn');
+        if (dlBtn) {
+          dlBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            downloadAnnotatedImage(dlBtn.dataset.b64, dlBtn.dataset.filename);
+          });
+        }
+
+        grid.appendChild(card);
+      });
+
+      applyFilter();
+    }
+  </script>
+</body>
+
+</html>

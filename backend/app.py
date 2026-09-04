@@ -22,7 +22,7 @@ from contextlib import asynccontextmanager
 import cv2
 import numpy as np
 import yaml
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from PIL import Image, ImageOps
@@ -125,18 +125,31 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from fastapi.staticfiles import StaticFiles
+
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
 
+app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
+
+MOBILE_UA_KEYWORDS = ("iphone", "android", "ipad", "mobile")
+
 @app.get("/", include_in_schema=False)
-async def serve_frontend():
-    """Serve the single-file frontend."""
-    index = FRONTEND_DIR / "index.html"
-    if not index.exists():
-        raise HTTPException(status_code=404,
-                            detail="frontend/index.html not found")
-    return FileResponse(str(index), media_type="text/html")
+async def index(request: Request):
+    """Serve the appropriate frontend based on User-Agent or ?view override."""
+    view = request.query_params.get("view")
+    if view not in ("mobile", "desktop"):
+        ua = request.headers.get("user-agent", "").lower()
+        view = "mobile" if any(k in ua for k in MOBILE_UA_KEYWORDS) else "desktop"
+    
+    filename = "mobile.html" if view == "mobile" else "desktop.html"
+    file_path = FRONTEND_DIR / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail=f"frontend/{filename} not found")
+    
+    return FileResponse(str(file_path), media_type="text/html")
 
 
 @app.post("/api/classify")

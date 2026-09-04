@@ -1,0 +1,15 @@
+:root {
+  --bg: #0A0B0A;
+  --surface: #17191A;
+  --surface-2: #1E2120;
+  --ink: #F3F4F0;
+  --muted: #8C948D;
+  --line: #2A2D2A;
+  --good: #37E39A;
+  --good-dim: #173B2C;
+  --spoiled: #FF5C5C;
+  --spoiled-dim: #3D1919;
+  --review: #FFC93C;
+  --review-dim: #3D3112;
+  --accent: #D6FF3F;
+}
