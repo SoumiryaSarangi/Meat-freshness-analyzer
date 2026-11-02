@@ -1,4 +1,7 @@
 # === Meat QC Web Pipeline Configuration ===
+# Module 3 - Visible Fat Coverage Analysis
+# Set fat_analyser.enabled: true once models/fat_segmenter.pt has been trained.
+# Run scripts/train_fat_segmenter.py to produce the weights file.
 
 freshness_classifier:
   weights: "../models/freshness_classifier.pt"
@@ -10,22 +13,33 @@ freshness_classifier:
 size_classifier:
   # ID-1 standard card dimensions (credit / debit / national ID card)
   card_width_mm: 85.60
-  card_height_mm: 53.98                # aspect ratio = 85.60 / 53.98 ≈ 1.586
-  card_aspect_tolerance: 0.18          # accept ±0.18 to allow perspective skew
+  card_height_mm: 53.98                # aspect ratio = 85.60 / 53.98 ~ 1.586
+  card_aspect_tolerance: 0.18          # accept +-0.18 to allow perspective skew
 
-  # ⚠️  size_threshold_mm carried over from the original conveyor design.
-  # It has NOT been validated against a real grinding/packing size cutoff.
-  # Treat it as a placeholder until tested against actual product.
+  # size_threshold_mm carried over from the original conveyor design.
   size_threshold_mm: 120
 
   # Fallback: if no reference card is detected, classify by meat-bbox area
-  # relative to the total image area (0.0 – 1.0).  Above this = "big".
-  # This is a rough heuristic — results are always marked size_method="estimated".
+  # relative to the total image area (0.0 - 1.0). Above this = "big".
+  # This is a rough heuristic - results are always marked size_method="estimated".
   fallback_area_threshold: 0.35
 
   # Distance-transform sensitivity for multi-piece detection.
   # 0.4 = moderate (tuned on synthetic test images only).
-  # ⚠️  Decrease (e.g. 0.3) to catch more subtle piece separations;
-  #     increase (e.g. 0.5) to reduce false positives on single pieces
-  #     with uneven surfaces.  Must be re-tuned against real tray photos.
   multi_piece_dist_threshold: 0.5
+
+fat_analyser:
+  # -- Toggle -------------------------------------------------------------------
+  # Set enabled: true once models/fat_segmenter.pt has been trained.
+  # When enabled: false the server starts without loading any fat model and all
+  # fat_* fields in the API response are null / false.
+  enabled: true
+
+  weights: "../models/fat_segmenter.pt"   # relative to backend/
+  input_size: 256                          # U-Net input resolution (px)
+  device: "cuda"                           # "cuda" if GPU available, else "cpu"
+
+  # Fat-coverage category thresholds (percentage of total meat surface)
+  fat_thresholds:
+    low: 15.0    # below this -> "low"
+    high: 40.0   # above this -> "high"; between low and high -> "moderate"

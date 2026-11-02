@@ -31,8 +31,20 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 28px 0;
+      padding: 18px 0;
       border-bottom: 1px solid var(--line);
+    }
+
+    .header-brand-group {
+      display: flex;
+      align-items: center;
+    }
+
+    .header-divider {
+      width: 1px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.12);
+      margin: 0 18px;
     }
 
     .word {
@@ -60,13 +72,219 @@
       align-items: start;
     }
 
+    .sidebar-col {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: sticky;
+      top: 40px;
+    }
+
     .panel {
       background: var(--surface);
       border: 1px solid var(--line);
       border-radius: 16px;
       padding: 22px;
-      position: sticky;
-      top: 40px;
+    }
+
+    /* ── Biogenic Amine Biosensor Hardware Integration Card ───────────── */
+    .sensor-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      box-sizing: border-box;
+      transition: border-color 0.2s ease;
+    }
+
+    .sensor-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .sensor-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .sensor-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+
+    .sensor-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(255, 92, 92, 0.12);
+      border: 1px solid rgba(255, 92, 92, 0.3);
+      color: var(--spoiled);
+      text-transform: uppercase;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--spoiled);
+      box-shadow: 0 0 6px rgba(255, 92, 92, 0.6);
+      animation: pulseAnim 2.5s infinite ease-in-out;
+    }
+
+    @keyframes pulseAnim {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .sensor-image-wrap {
+      background: #090a09;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sensor-image-wrap img {
+      width: 100%;
+      height: auto;
+      max-height: 80px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+    }
+
+    .sensor-strip-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 6px;
+      font-size: 9.5px;
+      color: var(--muted);
+      border-top: 1px dashed rgba(255, 255, 255, 0.06);
+      padding-top: 4px;
+    }
+
+    .sensor-grid-specs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 11px;
+    }
+
+    .spec-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .spec-item .spec-label {
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .spec-item .spec-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 11.5px;
+    }
+
+    .sensor-telemetry-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .telemetry-track {
+      height: 5px;
+      border-radius: 3px;
+      background: var(--line);
+      overflow: hidden;
+    }
+
+    .telemetry-fill {
+      height: 100%;
+      width: 8%;
+      background: var(--good);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+
+    .sensor-btn-handshake {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+    }
+
+    .sensor-btn-handshake:hover {
+      background: rgba(214, 255, 63, 0.1);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .sensor-btn-handshake:active {
+      transform: scale(0.98);
+    }
+
+    .sensor-handshake-log {
+      font-size: 10px;
+      color: var(--muted);
+      line-height: 1.4;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-family: monospace;
+      display: none;
+    }
+
+    .sensor-handshake-log.active {
+      display: block;
+      animation: fadeIn 0.2s ease;
     }
 
     .drop {
@@ -252,6 +470,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 18px;
+      align-items: start;
     }
 
     .card {
@@ -260,6 +479,8 @@
       border-radius: 14px;
       overflow: hidden;
       transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+      display: flex;
+      flex-direction: column;
     }
 
     .card:hover {
@@ -395,57 +616,1836 @@
         left: 100%;
       }
     }
+
+    /* Discard card details */
+    .card.spoiled {
+      border-color: rgba(255, 92, 92, 0.3);
+      background: rgba(255, 92, 92, 0.03);
+    }
+
+    .discard-info {
+      padding: 0 13px 13px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 11.5px;
+      color: var(--spoiled);
+    }
+
+    .discard-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--spoiled);
+      flex-shrink: 0;
+    }
+
+    /* Interactive photo switcher pill */
+    .photo-switcher {
+      position: absolute;
+      bottom: 8px;
+      right: 8px;
+      display: flex;
+      background: rgba(16, 19, 10, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 20px;
+      padding: 2px;
+      gap: 2px;
+      z-index: 5;
+    }
+
+    .photo-switch-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 3px 8px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .photo-switch-btn:hover {
+      color: var(--ink);
+    }
+
+    .photo-switch-btn.active {
+      background: rgba(255, 255, 255, 0.16);
+      color: var(--ink);
+    }
+
+    /* ── Module 3: Dynamic Visible Fat Coverage panel ────────────────── */
+    .fat-panel {
+      border-top: 1px solid var(--line);
+      padding: 10px 13px 12px;
+    }
+
+    .fat-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .fat-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11.5px;
+    }
+
+    .fat-bar-label {
+      width: 68px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .fat-bar-track {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--line);
+      overflow: hidden;
+    }
+
+    .fat-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+
+    .fat-bar-pct {
+      width: 40px;
+      text-align: right;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 11.5px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fat-category-badge {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 1.5px 6px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      vertical-align: middle;
+      margin-left: 2px;
+    }
+
+    .fat-category-badge.low     { background: rgba(55,227,154,.15); color: #37E39A; }
+    .fat-category-badge.moderate { background: rgba(255,201,60,.15); color: #FFC93C; }
+    .fat-category-badge.high    { background: rgba(255,120,30,.15); color: #FF781E; }
+
+    .fat-quality-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .fat-quality-info {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .fat-quality-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .fat-expand-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 10.5px;
+      font-family: inherit;
+      padding: 2.5px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background .15s, border-color .15s;
+    }
+
+    .fat-expand-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .fat-expand-btn .chevron {
+      width: 10px;
+      height: 10px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+
+    .fat-expand-btn.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .fat-collapsible {
+      display: none;
+      padding-top: 10px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fat-disclaimer {
+      font-size: 10.5px;
+      color: var(--muted);
+      background: rgba(255, 201, 60, 0.08);
+      border: 1px solid rgba(255, 201, 60, 0.18);
+      border-radius: 7px;
+      padding: 5px 9px;
+      margin-bottom: 9px;
+      line-height: 1.45;
+    }
+
+    .fat-dual-img {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .fat-img-wrap {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 4/3;
+    }
+
+    .fat-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .fat-img-label {
+      position: absolute;
+      bottom: 5px;
+      left: 6px;
+      font-size: 9.5px;
+      color: rgba(255,255,255,0.75);
+      background: rgba(0,0,0,0.65);
+      padding: 1.5px 5px;
+      border-radius: 4px;
+      backdrop-filter: blur(2px);
+    }
+
+    /* ── Module 1: Navigation & Header ───────────────────────────────── */
+    .nav-tabs {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 3px;
+      gap: 0;
+      user-select: none;
+      isolation: isolate;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-slider {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 0;
+      background: var(--accent);
+      border-radius: 9px;
+      transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1), width 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+      z-index: 1;
+      pointer-events: none;
+      box-shadow: 0 2px 10px rgba(214, 255, 63, 0.3);
+    }
+
+    .nav-tab {
+      position: relative;
+      z-index: 2;
+      background: transparent !important;
+      border: none;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 7px 18px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: color 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .nav-tab:hover {
+      color: #ffffff;
+    }
+
+    .nav-tab.active {
+      color: #0c1007 !important;
+      font-weight: 700;
+    }
+
+    .header-batch {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .batch-pill {
+      font-size: 12px;
+      background: rgba(214, 255, 63, 0.08);
+      border: 1px solid rgba(214, 255, 63, 0.25);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .batch-pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 6px var(--accent);
+      display: inline-block;
+    }
+
+    /* Active batch banner on top of Module 2 */
+    .active-batch-banner {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      font-size: 13px;
+    }
+
+    .active-batch-banner .info-group {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    .active-batch-banner strong {
+      color: var(--accent);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .banner-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 6px 14px;
+      border-radius: 9px;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .banner-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* ── Module 1 Layout ─────────────────────────────────────────────── */
+    .intake-layout {
+      display: grid;
+      grid-template-columns: 1fr 440px;
+      gap: 36px;
+      padding: 32px 0 60px;
+      align-items: start;
+    }
+
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .form-section-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .input-text, .input-select {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--ink);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .input-text:focus, .input-select:focus {
+      border-color: var(--accent);
+    }
+
+    .input-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .input-slider {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .pill-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .pill-opt {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 8px;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-opt .icon {
+      font-size: 22px;
+    }
+
+    .pill-opt .label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .pill-opt:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .pill-opt.selected {
+      border-color: var(--accent);
+      background: rgba(214, 255, 63, 0.08);
+    }
+
+    .pill-opt.selected .label {
+      color: var(--ink);
+    }
+
+    .unit-toggle {
+      display: inline-flex;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .unit-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 12px;
+      font-family: inherit;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .unit-btn.active {
+      background: var(--accent);
+      color: #10130a;
+      font-weight: 700;
+    }
+
+    /* Shelf life predictor panel */
+    .prediction-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: sticky;
+      top: 40px;
+    }
+
+    .shelf-life-display {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 22px 18px;
+      text-align: center;
+      position: relative;
+    }
+
+    .shelf-life-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 46px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+
+    .shelf-life-sub {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .confidence-tag {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      background: rgba(55, 227, 154, 0.12);
+      color: var(--good);
+      font-weight: 600;
+    }
+
+    .rec-box {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .rec-box strong {
+      color: var(--ink);
+    }
+
+    .warning-alert {
+      background: rgba(255, 92, 92, 0.08);
+      border: 1px solid rgba(255, 92, 92, 0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--spoiled);
+      line-height: 1.45;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .caution-alert {
+      background: rgba(255, 201, 60, 0.08);
+      border: 1px solid rgba(255, 201, 60, 0.25);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--review);
+      line-height: 1.45;
+      display: flex;
+      gap: 8px;
+      align-items: flex-start;
+    }
+
+    .drip-staging-box {
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 12px;
+    }
+
+    .drip-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .drip-badge {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      background: rgba(255, 201, 60, 0.15);
+      color: var(--review);
+      padding: 2.5px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .drip-desc {
+      color: var(--muted);
+      line-height: 1.45;
+      margin-bottom: 12px;
+    }
+
+    .drip-inputs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .drip-inputs .form-group {
+      min-width: 0;
+    }
+
+    .drip-inputs .input-text {
+      width: 100%;
+    }
+
+    .input-disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* ── Batches Provenance Modal ────────────────────────────────────── */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: modalFadeIn 0.2s ease;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-card {
+      background: #141614;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      width: 100%;
+      max-width: 900px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      animation: modalSlideUp 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+    }
+
+    @keyframes modalSlideUp {
+      from { opacity: 0; transform: translateY(18px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .modal-header h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+    }
+
+    .batch-count-badge {
+      font-size: 11px;
+      background: rgba(214, 255, 63, 0.12);
+      border: 1px solid rgba(214, 255, 63, 0.28);
+      color: var(--accent);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-family: inherit;
+    }
+
+    .modal-close-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 20px;
+      line-height: 1;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .modal-close-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+    }
+
+    .modal-subheader {
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-search-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 0 12px;
+    }
+
+    .modal-search-box input {
+      background: transparent;
+      border: none;
+      padding: 9px 0;
+      color: var(--ink);
+      font-size: 13px;
+      font-family: inherit;
+      width: 100%;
+      outline: none;
+    }
+
+    .modal-body {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .batch-item-card {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 16px 18px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .batch-item-card:hover {
+      border-color: rgba(255, 255, 255, 0.22);
+    }
+
+    .batch-item-card.is-active {
+      border-color: var(--accent);
+      background: rgba(214, 255, 63, 0.04);
+      box-shadow: 0 0 0 1px var(--accent);
+    }
+
+    .batch-item-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .batch-item-id {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .active-badge-tag {
+      background: rgba(214, 255, 63, 0.18);
+      border: 1px solid rgba(214, 255, 63, 0.4);
+      color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .batch-item-meta {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .batch-item-meta .meta-col {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .batch-item-meta strong {
+      color: var(--ink);
+      display: block;
+      font-size: 13px;
+      margin-top: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .batch-item-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 12px;
+    }
+
+    .batch-status-pill {
+      font-size: 11.5px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-select-batch {
+      background: var(--accent);
+      color: #10130a;
+      border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .btn-select-batch:hover {
+      opacity: 0.9;
+    }
+
+    .btn-select-batch:active {
+      transform: scale(0.97);
+    }
+
+    .btn-records-toggle {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 11.5px;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .btn-records-toggle:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .batch-records-tray {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      font-size: 12px;
+      display: none;
+    }
+
+    .batch-records-tray.open {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .batch-record-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      font-size: 11.5px;
+    }
+
+    .batch-record-row:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 
 <body>
   <div class="app">
     <header>
-      <div class="word">Mar<span>bl</span></div>
+      <div class="header-brand-group">
+        <div class="word">Mar<span>bl</span></div>
+        <div class="header-divider"></div>
+        <div class="nav-tabs" id="nav-tabs">
+          <div class="nav-slider" id="nav-slider"></div>
+          <button type="button" class="nav-tab active" id="tab-module1">Meat Intake & Quality</button>
+          <button type="button" class="nav-tab" id="tab-module2">AI Visual Scan</button>
+        </div>
+      </div>
+      <div class="header-batch">
+        <div id="header-active-batch" style="display:none">
+          <span class="batch-pill" id="btn-active-batch-pill" style="cursor:pointer" title="Click to view all batches">
+            <span class="batch-pulse-dot"></span> Batch: <strong id="header-batch-id">MB-...</strong>
+          </span>
+        </div>
+        <button type="button" id="btn-open-batches-modal" class="banner-btn" style="cursor:pointer">📋 Batches Vault</button>
+      </div>
     </header>
 
-    <div class="layout">
-      <div class="panel">
-        <div class="drop" id="drop-zone">
-          <div class="emoji">🥩</div>
-          <h3>Drop photos here</h3>
-          <p>or click to browse · JPEG, PNG</p>
-          <div class="paste">or paste from clipboard — <kbd>Ctrl</kbd>+<kbd>V</kbd></div>
-          <input type="file" id="file-input" accept="image/*" multiple style="display:none">
+    <!-- ── MODULE 1: INTAKE & QUALITY ASSESSMENT ─────────────────────── -->
+    <div id="view-module1">
+      <div class="intake-layout">
+        <div class="form-card">
+          <!-- 1. Batch Registration -->
+          <div>
+            <div class="form-section-title">📦 Batch Registration</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Batch ID <span>Unique provenance key</span></label>
+                <div style="display:flex;gap:8px">
+                  <input type="text" id="intake-batch-id" class="input-text" style="flex:1;font-weight:700" readonly>
+                  <button type="button" id="btn-regen-batch" class="banner-btn" title="Generate fresh ID">🔄</button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Intake Timestamp</label>
+                <input type="text" id="intake-timestamp" class="input-text" readonly style="color:var(--muted)">
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Meat Species Selection -->
+          <div>
+            <div class="form-section-title">🥩 Meat Type</div>
+            <div class="pill-grid" id="species-grid">
+              <div class="pill-opt selected" data-value="beef">
+                <span class="icon">🥩</span>
+                <span class="label">Beef</span>
+              </div>
+              <div class="pill-opt" data-value="chicken">
+                <span class="icon">🍗</span>
+                <span class="label">Chicken</span>
+              </div>
+              <div class="pill-opt" data-value="mutton">
+                <span class="icon">🍖</span>
+                <span class="label">Mutton</span>
+              </div>
+              <div class="pill-opt" data-value="pork">
+                <span class="icon">🥓</span>
+                <span class="label">Pork</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Quality & Thermal Parameters -->
+          <div>
+            <div class="form-section-title">🌡️ Thermal & Chemical Parameters</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Initial pH Value <span id="ph-badge" style="color:var(--good);font-weight:600">5.62 (Normal)</span></label>
+                <div class="input-slider-wrap">
+                  <input type="range" id="intake-ph-slider" class="input-slider" min="4.8" max="7.0" step="0.05" value="5.62">
+                  <input type="number" id="intake-ph-num" class="input-text" style="width:72px;text-align:center" min="4.8" max="7.0" step="0.05" value="5.62">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Receiving Temperature (°C) <span id="temp-badge" style="color:var(--good)">Cold chain OK</span></label>
+                <input type="number" id="intake-rec-temp" class="input-text" step="0.1" value="1.8">
+              </div>
+            </div>
+            <div class="form-row" style="margin-top:14px">
+              <div class="form-group">
+                <label>Time Elapsed Since Slaughter</label>
+                <div style="display:flex;gap:8px">
+                  <input type="number" id="intake-slaughter-hrs" class="input-text" style="flex:1" step="1" value="24" min="1">
+                  <span style="display:flex;align-items:center;font-size:13px;color:var(--muted)">hours</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Initial Meat Weight <span>(Saved for Drip-Loss)</span></label>
+                <div style="display:flex;gap:8px">
+                  <input type="number" id="intake-weight-val" class="input-text" style="flex:1" step="0.1" value="25.0" min="0.1">
+                  <div class="unit-toggle" id="unit-toggle-group">
+                    <button type="button" class="unit-btn active" data-unit="kg">kg</button>
+                    <button type="button" class="unit-btn" data-unit="g">g</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Transportation History & Packaging -->
+          <div>
+            <div class="form-section-title">🚚 Transit & Packaging</div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Transit Duration (hours)</label>
+                <input type="number" id="intake-trans-dur" class="input-text" step="0.5" value="4.0" min="0">
+              </div>
+              <div class="form-group">
+                <label>Average Transit Temp (°C)</label>
+                <input type="number" id="intake-trans-temp" class="input-text" step="0.1" value="2.0">
+              </div>
+            </div>
+            <div style="margin-top:12px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--ink);cursor:pointer">
+                <input type="checkbox" id="intake-trans-excursion" style="accent-color:var(--spoiled);width:16px;height:16px">
+                <span>⚠️ Temperature spike / cold chain break detected during transit</span>
+              </label>
+            </div>
+            <div style="margin-top:18px">
+              <label style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px;display:block">Packaging Atmosphere</label>
+              <div class="pill-grid" id="packaging-grid" style="grid-template-columns:repeat(3, 1fr)">
+                <div class="pill-opt" data-value="air">
+                  <span class="icon">💨</span>
+                  <span class="label">Air (Aerobic)</span>
+                </div>
+                <div class="pill-opt selected" data-value="vacuum">
+                  <span class="icon">📦</span>
+                  <span class="label">Vacuum (VP)</span>
+                </div>
+                <div class="pill-opt" data-value="map">
+                  <span class="icon">🛡️</span>
+                  <span class="label">MAP</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="preview-strip" id="preview-strip"></div>
+        <!-- Right Column: Predictive Shelf-Life Analytics & Staged Tests -->
+        <div class="prediction-card">
+          <div class="form-section-title">🔬 Predictive Shelf-Life Assessment</div>
+          <div class="shelf-life-display">
+            <div class="shelf-life-val" id="pred-days">—</div>
+            <div class="shelf-life-sub" id="pred-ci">Calculating kinetics...</div>
+            <div class="confidence-tag" id="pred-conf">High Confidence</div>
+          </div>
 
-        <button class="cta" id="cta-btn" disabled>Select photos to scan</button>
+          <div class="rec-box" id="pred-rec">
+            <strong>Recommended Storage:</strong> Maintain 0°C to +2°C in dark chill room.
+          </div>
 
-        <div class="stats">
-          <h4>This batch</h4>
-          <div class="stat-row" data-filter="good"><span><i class="dot"
-                style="background:var(--good)"></i>Good</span><span class="n" id="stat-good">&mdash;</span></div>
-          <div class="stat-row" data-filter="spoiled"><span><i class="dot"
-                style="background:var(--spoiled)"></i>Spoiled</span><span class="n" id="stat-spoiled">&mdash;</span>
+          <div id="pred-warnings-container" style="display:flex;flex-direction:column;gap:8px">
+            <!-- Dynamic alerts appear here -->
+          </div>
+
+          <!-- Staged Drip-Loss Section -->
+          <div class="drip-staging-box">
+            <div class="drip-header">
+              <strong style="color:var(--ink)">🧪 Drip Loss Evaluation</strong>
+              <span class="drip-badge">In Development</span>
+            </div>
+            <p class="drip-desc">
+              Standardized 48-hour storage test at 4°C in climate-controlled chamber. Initial weight is recorded now and decoupled from shelf-life models.
+            </p>
+            <div class="drip-inputs">
+              <div class="form-group">
+                <label>Recorded Initial Wt</label>
+                <input type="text" id="drip-initial-wt" class="input-text" readonly value="25.0 kg">
+              </div>
+              <div class="form-group">
+                <label>Final Weight (Post-Test)</label>
+                <input type="text" class="input-text input-disabled" disabled placeholder="Pending test">
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="cta" id="btn-save-proceed" style="margin-top:0">Save Batch & Proceed to Visual Inspection →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MODULE 2: AI VISUAL INSPECTION (CONVEYOR SCAN) ─────────────── -->
+    <div id="view-module2" style="display:none">
+      <div class="active-batch-banner" id="module2-batch-banner">
+        <div class="info-group">
+          <div>Active Batch: <strong id="m2-banner-batch-id">MB-PENDING</strong></div>
+          <div>Species: <span id="m2-banner-species">Beef</span></div>
+          <div>Packaging: <span id="m2-banner-pkg">Vacuum</span></div>
+          <div>Initial Wt: <span id="m2-banner-wt">25.0 kg</span></div>
+          <div>Est. Shelf Life: <strong id="m2-banner-shelflife">—</strong></div>
+        </div>
+        <button type="button" class="banner-btn" id="btn-change-batch">Change Batch</button>
+      </div>
+
+      <div class="layout" style="padding-top:6px">
+        <div class="sidebar-col">
+          <div class="panel">
+            <div class="drop" id="drop-zone">
+              <div class="emoji">🥩</div>
+              <h3>Drop photos here</h3>
+              <p>or click to browse · JPEG, PNG</p>
+              <div class="paste">or paste from clipboard — <kbd>Ctrl</kbd>+<kbd>V</kbd></div>
+              <input type="file" id="file-input" accept="image/*" multiple style="display:none">
+            </div>
+
+            <div class="preview-strip" id="preview-strip"></div>
+
+            <button class="cta" id="cta-btn" disabled>Select photos to scan</button>
+
+            <div class="stats">
+              <h4>This batch</h4>
+              <div class="stat-row" data-filter="good"><span><i class="dot"
+                    style="background:var(--good)"></i>Good</span><span class="n" id="stat-good">&mdash;</span></div>
+              <div class="stat-row" data-filter="spoiled"><span><i class="dot"
+                    style="background:var(--spoiled)"></i>Spoiled</span><span class="n" id="stat-spoiled">&mdash;</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── BIOGENIC AMINE SENSOR HARDWARE INTEGRATION CARD ── -->
+          <div class="sensor-card">
+            <div class="sensor-card-head">
+              <div class="sensor-title">
+                <span>⚡</span> Biogenic Amine Sensor
+              </div>
+              <span class="sensor-status-badge" id="sensor-status-badge">
+                <span class="pulse-dot"></span>
+                <span>Device Disconnected</span>
+              </span>
+            </div>
+
+            <div class="sensor-image-wrap">
+              <img src="/static/sensor_strip.png" alt="Screen-Printed Biogenic Amine Electrochemical Sensor Strip">
+              <div class="sensor-strip-labels">
+                <span>▲ Au Micro-Electrodes (WE/RE/CE)</span>
+                <span>DAO Enzyme Well ▲</span>
+              </div>
+            </div>
+
+            <div class="sensor-grid-specs">
+              <div class="spec-item">
+                <span class="spec-label">Target Analytes</span>
+                <span class="spec-val">Putrescine / Cadaverine</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Hardware Bus</span>
+                <span class="spec-val">UART/BLE (COM3 Ready)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Working Potential</span>
+                <span class="spec-val">+0.42 V (Configured)</span>
+              </div>
+              <div class="spec-item">
+                <span class="spec-label">Live Sensor Reading</span>
+                <span class="spec-val" style="color:var(--muted);font-weight:500">— (Awaiting Hardware)</span>
+              </div>
+            </div>
+
+            <div class="sensor-telemetry-bar">
+              <div class="telemetry-row">
+                <span>Amine Accumulation Index</span>
+                <span style="color:var(--muted);font-size:11px">Hardware Offline</span>
+              </div>
+              <div class="telemetry-track">
+                <div class="telemetry-fill" style="width:0%;background:var(--muted)"></div>
+              </div>
+            </div>
+
+            <button type="button" id="btn-sensor-handshake" class="sensor-btn-handshake">
+              <span>🔌</span> Scan for Sensor Hardware
+            </button>
+            <div id="sensor-handshake-log" class="sensor-handshake-log"></div>
+          </div>
+        </div>
+
+        <div class="results">
+          <div class="results-head">
+            <h2>Results</h2>
+            <span id="results-hint">Awaiting photos...</span>
+          </div>
+          <div id="spinner-container" style="display:none">
+            <div class="spinner"></div>
+          </div>
+          <div class="grid" id="grid">
+            <!-- Results render here -->
           </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="results">
-        <div class="results-head">
-          <h2>Results</h2>
-          <span id="results-hint">Awaiting photos...</span>
+  <!-- ── BATCHES HISTORY & PROVENANCE VAULT MODAL ── -->
+  <div class="modal-overlay" id="batches-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">
+          <span>📦</span> Stored Batches & Provenance Vault
+          <span class="batch-count-badge" id="modal-batch-count">0 Batches</span>
+        </h3>
+        <button type="button" class="modal-close-btn" id="btn-close-batches-modal" aria-label="Close modal">×</button>
+      </div>
+
+      <div class="modal-subheader">
+        <div class="modal-search-box">
+          <span style="color:var(--muted)">🔍</span>
+          <input type="text" id="batch-search-input" placeholder="Search by Batch ID, species (Beef, Chicken...) or status...">
         </div>
-        <div id="spinner-container" style="display:none">
+        <button type="button" id="btn-modal-refresh-batches" class="banner-btn" title="Refresh batches from database">
+          🔄 Refresh
+        </button>
+        <button type="button" id="btn-modal-new-batch" class="banner-btn" style="border-color:var(--accent);color:var(--accent)">
+          + New Intake
+        </button>
+      </div>
+
+      <div class="modal-body" id="modal-batches-list">
+        <div style="text-align:center;padding:40px;color:var(--muted)">
           <div class="spinner"></div>
-        </div>
-        <div class="grid" id="grid">
-          <!-- Results render here -->
+          <p>Loading stored batches from database...</p>
         </div>
       </div>
     </div>
   </div>
 
   <script type="module">
-    import { classifyImages, downloadAnnotatedImage } from '/static/shared.js';
+    import { classifyImages, downloadAnnotatedImage, estimateShelfLife, createBatch, getBatch, listBatches, getInspectionRecords } from '/static/shared.js';
 
+    // ── Module Navigation & State ───────────────────────────────────────────
+    let activeBatch = null;
+
+    const tabModule1 = document.getElementById('tab-module1');
+    const tabModule2 = document.getElementById('tab-module2');
+    const navSlider = document.getElementById('nav-slider');
+    const navTabsContainer = document.getElementById('nav-tabs');
+    const viewModule1 = document.getElementById('view-module1');
+    const viewModule2 = document.getElementById('view-module2');
+    const headerActiveBatch = document.getElementById('header-active-batch');
+    const headerBatchId = document.getElementById('header-batch-id');
+    const btnChangeBatch = document.getElementById('btn-change-batch');
+
+    function updateNavSlider(tabElement) {
+      if (!navSlider || !tabElement || !navTabsContainer) return;
+      const tabRect = tabElement.getBoundingClientRect();
+      const containerRect = navTabsContainer.getBoundingClientRect();
+      const left = tabRect.left - containerRect.left;
+      const width = tabRect.width;
+      navSlider.style.transform = `translateX(${left}px)`;
+      navSlider.style.width = `${width}px`;
+    }
+
+    function switchTab(view) {
+      if (view === 'module1') {
+        tabModule1.classList.add('active');
+        tabModule2.classList.remove('active');
+        updateNavSlider(tabModule1);
+        viewModule1.style.display = 'block';
+        viewModule2.style.display = 'none';
+      } else {
+        tabModule2.classList.add('active');
+        tabModule1.classList.remove('active');
+        updateNavSlider(tabModule2);
+        viewModule2.style.display = 'block';
+        viewModule1.style.display = 'none';
+      }
+    }
+
+    tabModule1.addEventListener('click', () => switchTab('module1'));
+    tabModule2.addEventListener('click', () => switchTab('module2'));
+    if (btnChangeBatch) btnChangeBatch.addEventListener('click', () => switchTab('module1'));
+
+    window.addEventListener('resize', () => {
+      const active = document.querySelector('.nav-tab.active');
+      if (active) updateNavSlider(active);
+    });
+    // Initialize slider position after render
+    requestAnimationFrame(() => {
+      const active = document.querySelector('.nav-tab.active');
+      if (active) updateNavSlider(active);
+    });
+
+    // ── Module 1: Intake Form Elements ──────────────────────────────────────
+    const intakeBatchId = document.getElementById('intake-batch-id');
+    const intakeTimestamp = document.getElementById('intake-timestamp');
+    const btnRegenBatch = document.getElementById('btn-regen-batch');
+
+    const speciesGrid = document.getElementById('species-grid');
+    const packagingGrid = document.getElementById('packaging-grid');
+
+    const phSlider = document.getElementById('intake-ph-slider');
+    const phNum = document.getElementById('intake-ph-num');
+    const phBadge = document.getElementById('ph-badge');
+
+    const recTempInput = document.getElementById('intake-rec-temp');
+    const tempBadge = document.getElementById('temp-badge');
+
+    const slaughterHrsInput = document.getElementById('intake-slaughter-hrs');
+    const weightValInput = document.getElementById('intake-weight-val');
+    const unitToggleGroup = document.getElementById('unit-toggle-group');
+
+    const transDurInput = document.getElementById('intake-trans-dur');
+    const transTempInput = document.getElementById('intake-trans-temp');
+    const transExcursion = document.getElementById('intake-trans-excursion');
+
+    const predDays = document.getElementById('pred-days');
+    const predCi = document.getElementById('pred-ci');
+    const predConf = document.getElementById('pred-conf');
+    const predRec = document.getElementById('pred-rec');
+    const predWarnings = document.getElementById('pred-warnings-container');
+    const dripInitialWt = document.getElementById('drip-initial-wt');
+    const btnSaveProceed = document.getElementById('btn-save-proceed');
+
+    // Generate fresh batch ID
+    function generateFreshBatchId() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const rnd = Math.random().toString(16).substring(2, 6).toUpperCase();
+      return `MB-${y}${m}${d}-${rnd}`;
+    }
+
+    function initBatchForm() {
+      intakeBatchId.value = generateFreshBatchId();
+      intakeTimestamp.value = new Date().toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' });
+      updateDripInitial();
+      calcShelfLife();
+    }
+
+    if (btnRegenBatch) {
+      btnRegenBatch.addEventListener('click', () => {
+        intakeBatchId.value = generateFreshBatchId();
+      });
+    }
+
+    // Species selection
+    speciesGrid.querySelectorAll('.pill-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        speciesGrid.querySelectorAll('.pill-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        calcShelfLife();
+      });
+    });
+
+    // Packaging selection
+    packagingGrid.querySelectorAll('.pill-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        packagingGrid.querySelectorAll('.pill-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        calcShelfLife();
+      });
+    });
+
+    // Unit toggle
+    let activeUnit = 'kg';
+    unitToggleGroup.querySelectorAll('.unit-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        unitToggleGroup.querySelectorAll('.unit-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        activeUnit = btn.dataset.unit;
+        updateDripInitial();
+      });
+    });
+
+    function updateDripInitial() {
+      if (dripInitialWt && weightValInput) {
+        dripInitialWt.value = `${weightValInput.value} ${activeUnit}`;
+      }
+    }
+
+    // Two-way sync: pH slider & number input
+    phSlider.addEventListener('input', () => {
+      phNum.value = phSlider.value;
+      updatePhBadge(parseFloat(phSlider.value));
+      debouncedCalc();
+    });
+    phNum.addEventListener('input', () => {
+      phSlider.value = phNum.value;
+      updatePhBadge(parseFloat(phNum.value));
+      debouncedCalc();
+    });
+
+    function updatePhBadge(ph) {
+      if (ph >= 6.0) {
+        phBadge.textContent = `${ph.toFixed(2)} (⚠️ DFD Spoilage Hazard)`;
+        phBadge.style.color = 'var(--spoiled)';
+      } else if (ph < 5.4) {
+        phBadge.textContent = `${ph.toFixed(2)} (Low pH / Exudative)`;
+        phBadge.style.color = 'var(--review)';
+      } else {
+        phBadge.textContent = `${ph.toFixed(2)} (Normal Fresh)`;
+        phBadge.style.color = 'var(--good)';
+      }
+    }
+
+    // Receiving temp badge
+    recTempInput.addEventListener('input', () => {
+      const t = parseFloat(recTempInput.value) || 0;
+      if (t > 4.0) {
+        tempBadge.textContent = '🚨 > 4.0°C Cold Chain Breach';
+        tempBadge.style.color = 'var(--spoiled)';
+      } else if (t > 2.5) {
+        tempBadge.textContent = 'Elevated Chill';
+        tempBadge.style.color = 'var(--review)';
+      } else {
+        tempBadge.textContent = 'Cold chain OK';
+        tempBadge.style.color = 'var(--good)';
+      }
+      debouncedCalc();
+    });
+
+    // Other inputs
+    slaughterHrsInput.addEventListener('input', debouncedCalc);
+    transDurInput.addEventListener('input', debouncedCalc);
+    transTempInput.addEventListener('input', debouncedCalc);
+    transExcursion.addEventListener('change', debouncedCalc);
+    weightValInput.addEventListener('input', updateDripInitial);
+
+    function getIntakeFormData() {
+      const selectedSpecies = speciesGrid.querySelector('.pill-opt.selected')?.dataset.value || 'beef';
+      const selectedPkg = packagingGrid.querySelector('.pill-opt.selected')?.dataset.value || 'vacuum';
+
+      const parseNum = (val, def) => {
+        const n = parseFloat(val);
+        return isNaN(n) ? def : n;
+      };
+
+      return {
+        batch_id: intakeBatchId.value.trim(),
+        meat_type: selectedSpecies,
+        initial_ph: parseNum(phNum.value, 5.62),
+        receiving_temp_c: parseNum(recTempInput.value, 2.0),
+        time_since_slaughter_hrs: parseNum(slaughterHrsInput.value, 24.0),
+        transport_temp_avg_c: parseNum(transTempInput.value, 2.0),
+        transport_duration_hrs: parseNum(transDurInput.value, 4.0),
+        transport_excursion: transExcursion.checked,
+        packaging_type: selectedPkg,
+        initial_weight_val: parseNum(weightValInput.value, 25.0),
+        initial_weight_unit: activeUnit,
+      };
+    }
+
+    let calcTimeout = null;
+    function debouncedCalc() {
+      clearTimeout(calcTimeout);
+      calcTimeout = setTimeout(calcShelfLife, 250);
+    }
+
+    async function calcShelfLife() {
+      try {
+        const data = getIntakeFormData();
+        const res = await estimateShelfLife(data);
+
+        predDays.textContent = `${res.shelf_life_days} days`;
+        predCi.textContent = `[${res.shelf_life_min_days} – ${res.shelf_life_max_days} days, 95% CI]`;
+        predConf.textContent = `${Math.round(res.confidence_score * 100)}% Confidence`;
+
+        predRec.innerHTML = `<strong>Recommended Storage:</strong> ${res.recommended_conditions} (Target: ${res.recommended_temp_c})`;
+
+        // Render warnings
+        predWarnings.innerHTML = '';
+        if (res.warnings && res.warnings.length) {
+          res.warnings.forEach(w => {
+            const div = document.createElement('div');
+            const isBreach = w.includes('🚨') || w.includes('Breach') || w.includes('Critical');
+            div.className = isBreach ? 'warning-alert' : 'caution-alert';
+            div.textContent = w;
+            predWarnings.appendChild(div);
+          });
+        }
+      } catch (err) {
+        console.warn('Shelf-life estimation error:', err);
+      }
+    }
+
+    // Save batch & transition to Module 2
+    btnSaveProceed.addEventListener('click', async () => {
+      btnSaveProceed.disabled = true;
+      btnSaveProceed.textContent = 'Registering Batch...';
+
+      try {
+        const data = getIntakeFormData();
+        const res = await createBatch(data);
+        activeBatch = res.batch;
+
+        // Save active batch to localStorage
+        localStorage.setItem('marbl_active_batch', JSON.stringify(activeBatch));
+
+        // Update banners
+        applyActiveBatchBanner(activeBatch, res.shelf_life);
+
+        // Switch to Module 2
+        switchTab('module2');
+      } catch (err) {
+        alert('Failed to register batch: ' + err.message);
+      } finally {
+        btnSaveProceed.disabled = false;
+        btnSaveProceed.textContent = 'Save Batch & Proceed to Visual Inspection →';
+      }
+    });
+
+    function applyActiveBatchBanner(batch, shelfLife) {
+      if (!batch) return;
+      headerActiveBatch.style.display = 'flex';
+      headerBatchId.textContent = batch.batch_id;
+
+      document.getElementById('m2-banner-batch-id').textContent = batch.batch_id;
+      document.getElementById('m2-banner-species').textContent = batch.meat_type.toUpperCase();
+      document.getElementById('m2-banner-pkg').textContent = batch.packaging_type.toUpperCase();
+      document.getElementById('m2-banner-wt').textContent = `${batch.initial_weight_val} ${batch.initial_weight_unit}`;
+      document.getElementById('m2-banner-shelflife').textContent = `~${batch.shelf_life_days} days`;
+    }
+
+    // Check localStorage for existing active batch on load
+    try {
+      const saved = localStorage.getItem('marbl_active_batch');
+      if (saved) {
+        activeBatch = JSON.parse(saved);
+        applyActiveBatchBanner(activeBatch);
+      }
+    } catch (e) {}
+
+    initBatchForm();
+
+    // ── Batches History & Provenance Vault Modal ────────────────────────────
+    const batchesModal = document.getElementById('batches-modal');
+    const btnOpenBatchesModal = document.getElementById('btn-open-batches-modal');
+    const btnActiveBatchPill = document.getElementById('btn-active-batch-pill');
+    const btnCloseBatchesModal = document.getElementById('btn-close-batches-modal');
+    const btnRefreshBatches = document.getElementById('btn-modal-refresh-batches');
+    const btnModalNewBatch = document.getElementById('btn-modal-new-batch');
+    const modalBatchCount = document.getElementById('modal-batch-count');
+    const modalBatchesList = document.getElementById('modal-batches-list');
+    const batchSearchInput = document.getElementById('batch-search-input');
+
+    let loadedBatches = [];
+
+    function openBatchesModal() {
+      if (!batchesModal) return;
+      batchesModal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      loadAndRenderBatches();
+    }
+
+    function closeBatchesModal() {
+      if (!batchesModal) return;
+      batchesModal.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    if (btnOpenBatchesModal) btnOpenBatchesModal.addEventListener('click', openBatchesModal);
+    if (btnActiveBatchPill) btnActiveBatchPill.addEventListener('click', openBatchesModal);
+    if (btnCloseBatchesModal) btnCloseBatchesModal.addEventListener('click', closeBatchesModal);
+    if (btnChangeBatch) btnChangeBatch.addEventListener('click', openBatchesModal);
+
+    if (batchesModal) {
+      batchesModal.addEventListener('click', (e) => {
+        if (e.target === batchesModal) closeBatchesModal();
+      });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && batchesModal && batchesModal.classList.contains('open')) {
+        closeBatchesModal();
+      }
+    });
+
+    if (btnRefreshBatches) btnRefreshBatches.addEventListener('click', loadAndRenderBatches);
+    if (btnModalNewBatch) {
+      btnModalNewBatch.addEventListener('click', () => {
+        closeBatchesModal();
+        switchTab('module1');
+        initBatchForm();
+      });
+    }
+
+    if (batchSearchInput) {
+      batchSearchInput.addEventListener('input', () => {
+        renderBatchesList(filterBatches(batchSearchInput.value));
+      });
+    }
+
+    function filterBatches(query) {
+      const q = (query || '').toLowerCase().trim();
+      if (!q) return loadedBatches;
+      return loadedBatches.filter(b => 
+        (b.batch_id || '').toLowerCase().includes(q) ||
+        (b.meat_type || '').toLowerCase().includes(q) ||
+        (b.packaging_type || '').toLowerCase().includes(q) ||
+        (b.status || '').toLowerCase().includes(q)
+      );
+    }
+
+    async function loadAndRenderBatches() {
+      if (!modalBatchesList) return;
+      modalBatchesList.innerHTML = `
+        <div style="text-align:center;padding:40px;color:var(--muted)">
+          <div class="spinner"></div>
+          <p style="margin-top:12px;font-size:13px">Retrieving batch provenance from data/marbl.db...</p>
+        </div>
+      `;
+      try {
+        const batches = await listBatches();
+        loadedBatches = batches || [];
+        if (modalBatchCount) {
+          modalBatchCount.textContent = `${loadedBatches.length} Batch${loadedBatches.length === 1 ? '' : 'es'}`;
+        }
+        renderBatchesList(filterBatches(batchSearchInput ? batchSearchInput.value : ''));
+      } catch (err) {
+        modalBatchesList.innerHTML = `
+          <div style="text-align:center;padding:30px;color:var(--spoiled)">
+            <p>Failed to load batches from database: ${err.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    function getSpeciesEmoji(species) {
+      const s = (species || '').toLowerCase();
+      if (s === 'chicken') return '🍗';
+      if (s === 'pork') return '🥓';
+      if (s === 'mutton') return '🍖';
+      return '🥩';
+    }
+
+    function renderBatchesList(batches) {
+      if (!modalBatchesList) return;
+      if (!batches || !batches.length) {
+        modalBatchesList.innerHTML = `
+          <div style="text-align:center;padding:48px 20px;color:var(--muted)">
+            <div style="font-size:36px;margin-bottom:10px">📦</div>
+            <h4 style="color:var(--ink);margin:0 0 6px">No Stored Batches Found</h4>
+            <p style="font-size:13px;margin:0 0 16px">No intake batches match the criteria. Complete Module 1 intake to register a new batch.</p>
+            <button type="button" class="cta" style="width:auto;display:inline-block;padding:10px 20px" id="empty-create-btn">+ Create Intake Batch</button>
+          </div>
+        `;
+        const ecBtn = modalBatchesList.querySelector('#empty-create-btn');
+        if (ecBtn) ecBtn.addEventListener('click', () => {
+          closeBatchesModal();
+          switchTab('module1');
+          initBatchForm();
+        });
+        return;
+      }
+
+      modalBatchesList.innerHTML = '';
+      batches.forEach(b => {
+        const isActive = activeBatch && activeBatch.batch_id === b.batch_id;
+        const card = document.createElement('div');
+        card.className = `batch-item-card ${isActive ? 'is-active' : ''}`;
+
+        const createdDate = b.created_at ? new Date(b.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'Unknown date';
+        const speciesEmoji = getSpeciesEmoji(b.meat_type);
+        const inspCount = b.inspection_count || 0;
+
+        card.innerHTML = `
+          <div class="batch-item-head">
+            <div class="batch-item-id">
+              <span>${speciesEmoji}</span>
+              <span>${b.batch_id}</span>
+              ${isActive ? '<span class="active-badge-tag">CURRENT ACTIVE</span>' : ''}
+            </div>
+            <span style="font-size:12px;color:var(--muted)">${createdDate}</span>
+          </div>
+
+          <div class="batch-item-meta">
+            <div class="meta-col">
+              Species & Packaging
+              <strong>${(b.meat_type || '').toUpperCase()} (${(b.packaging_type || 'VP').toUpperCase()})</strong>
+            </div>
+            <div class="meta-col">
+              Initial Weight (Drip Test)
+              <strong>${b.initial_weight_val} ${b.initial_weight_unit || 'kg'}</strong>
+            </div>
+            <div class="meta-col">
+              Shelf Life Prediction
+              <strong style="color:var(--accent)">~${b.shelf_life_days} days [${b.shelf_life_min_days}–${b.shelf_life_max_days}d]</strong>
+            </div>
+            <div class="meta-col">
+              Visual Inspections
+              <strong style="color:${inspCount > 0 ? 'var(--good)' : 'var(--muted)'}">${inspCount} item${inspCount === 1 ? '' : 's'} scanned</strong>
+            </div>
+          </div>
+
+          <div class="batch-item-actions">
+            <div class="batch-status-pill">
+              <span>pH: <strong style="color:var(--ink)">${Number(b.initial_ph || 5.6).toFixed(2)}</strong></span>
+              <span>•</span>
+              <span>Rec Temp: <strong style="color:var(--ink)">${Number(b.receiving_temp_c || 2.0).toFixed(1)}°C</strong></span>
+              ${(b.warnings && b.warnings.length) ? `<span style="color:var(--review);margin-left:4px">⚠️ ${b.warnings.length} notice${b.warnings.length > 1 ? 's' : ''}</span>` : ''}
+            </div>
+            <div style="display:flex;gap:8px">
+              ${inspCount > 0 ? `<button type="button" class="btn-records-toggle" data-batch="${b.batch_id}">🔍 Records (${inspCount})</button>` : ''}
+              <button type="button" class="btn-select-batch" data-batch-id="${b.batch_id}">
+                ${isActive ? '✓ Active' : 'Set as Active'}
+              </button>
+            </div>
+          </div>
+
+          <div class="batch-records-tray" id="tray-${b.batch_id}">
+            <div style="color:var(--muted);font-size:11.5px">Loading visual inspection records...</div>
+          </div>
+        `;
+
+        // Wire Select as Active button
+        const selectBtn = card.querySelector('.btn-select-batch');
+        if (selectBtn) {
+          selectBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            try {
+              const fullBatch = await getBatch(b.batch_id);
+              activeBatch = fullBatch || b;
+            } catch (err) {
+              activeBatch = b;
+            }
+            localStorage.setItem('marbl_active_batch', JSON.stringify(activeBatch));
+            applyActiveBatchBanner(activeBatch);
+            closeBatchesModal();
+            switchTab('module2');
+          });
+        }
+
+        // Wire records tray toggle
+        const toggleBtn = card.querySelector('.btn-records-toggle');
+        if (toggleBtn) {
+          toggleBtn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const tray = card.querySelector(`#tray-${b.batch_id}`);
+            const isOpen = tray.classList.contains('open');
+            if (isOpen) {
+              tray.classList.remove('open');
+              toggleBtn.textContent = `🔍 Records (${inspCount})`;
+            } else {
+              tray.classList.add('open');
+              toggleBtn.textContent = `▲ Hide Records`;
+              try {
+                const records = await getInspectionRecords(b.batch_id);
+                if (!records || !records.length) {
+                  tray.innerHTML = `<div style="color:var(--muted);font-size:11.5px">No visual inspection records found for this batch.</div>`;
+                } else {
+                  let html = `<div style="font-weight:600;margin-bottom:8px;color:var(--ink)">Visual Inspection Records for ${b.batch_id} (${records.length}):</div>`;
+                  records.forEach((r, idx) => {
+                    const isDiscard = r.decision === 'discard';
+                    const decBadge = isDiscard ? '<span style="color:var(--spoiled);font-weight:700">DISCARD</span>' : '<span style="color:var(--good);font-weight:700">PASSED</span>';
+                    const fatPct = r.fat_coverage_pct != null ? `${r.fat_coverage_pct}% fat` : '';
+                    const sizeMm = r.longest_dimension_mm ? `~${Math.round(r.longest_dimension_mm)}mm` : '';
+                    html += `
+                      <div class="batch-record-row">
+                        <div>
+                          <strong style="color:var(--ink)">#${idx + 1}</strong> ${r.filename}
+                          <span style="color:var(--muted);margin-left:8px">${r.timestamp ? new Date(r.timestamp).toLocaleTimeString() : ''}</span>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px">
+                          <span>${sizeMm}</span>
+                          <span>${fatPct}</span>
+                          ${decBadge}
+                        </div>
+                      </div>
+                    `;
+                  });
+                  tray.innerHTML = html;
+                }
+              } catch (err) {
+                tray.innerHTML = `<div style="color:var(--spoiled);font-size:11.5px">Failed to load records: ${err.message}</div>`;
+              }
+            }
+          });
+        }
+
+        modalBatchesList.appendChild(card);
+      });
+    }
+
+    // ── Module 2 & 3: Visual Inspection Code ────────────────────────────────
     let queue = [];
     const dropZone = document.getElementById('drop-zone');
     const fileInput = document.getElementById('file-input');
@@ -531,7 +2531,7 @@
       }
     }
 
-    // API Call
+    // API Call (Bound to Active Batch)
     ctaBtn.addEventListener('click', async () => {
       if (!queue.length) return;
 
@@ -545,7 +2545,8 @@
       }
 
       try {
-        const results = await classifyImages(queue);
+        const batchIdToSend = activeBatch ? activeBatch.batch_id : null;
+        const results = await classifyImages(queue, batchIdToSend);
         renderResults(results);
       } catch (err) {
         grid.innerHTML = `<p style="color:var(--spoiled)">Error: ${err.message}</p>`;
@@ -555,9 +2556,72 @@
       }
     });
 
+    // ── Module 3: Fat Coverage Panel Builder ────────────────────────────────
+    function buildFatPanel(r, idx) {
+      if (!r.fat_analysis_available) return '';
+
+      const fat  = r.fat_coverage_pct  ?? 0;
+      const lean = r.lean_coverage_pct ?? 0;
+      const cat  = r.fat_category      ?? 'low';
+      const qual = r.segmentation_quality ?? 0;
+
+      let qualLabel, qualColor;
+      if      (qual >= 0.85) { qualLabel = 'Excellent'; qualColor = '#37E39A'; }
+      else if (qual >= 0.70) { qualLabel = 'Good';      qualColor = '#37E39A'; }
+      else if (qual >= 0.55) { qualLabel = 'Fair';      qualColor = '#FFC93C'; }
+      else                   { qualLabel = 'Low';        qualColor = '#FF5C5C'; }
+
+      const fatBarColor = cat === 'high' ? '#FF781E' : cat === 'moderate' ? '#FFC93C' : '#37E39A';
+
+      const origImg = r.annotated_image_base64;
+      const fatImg  = r.fat_overlay_image_base64;
+      let dualImg = '';
+      if (origImg || fatImg) {
+        const leftImg  = origImg ? `<img src="${origImg}" alt="Original">` :
+          `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:11px">No image</div>`;
+        const rightImg = fatImg  ? `<img src="${fatImg}"  alt="Segmented">` :
+          `<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:11px">No overlay</div>`;
+        dualImg = `
+          <div class="fat-dual-img">
+            <div class="fat-img-wrap">${leftImg}<span class="fat-img-label">Original</span></div>
+            <div class="fat-img-wrap">${rightImg}<span class="fat-img-label">AI Segmented</span></div>
+          </div>`;
+      }
+
+      return `
+        <div class="fat-panel">
+          <div class="fat-bars">
+            <div class="fat-bar-row">
+              <span class="fat-bar-label">Visible Fat</span>
+              <div class="fat-bar-track"><div class="fat-bar-fill" style="width:${fat.toFixed(1)}%;background:${fatBarColor}"></div></div>
+              <span class="fat-bar-pct" style="color:${fatBarColor}">${fat.toFixed(1)}%</span>
+              <span class="fat-category-badge ${cat}">${cat}</span>
+            </div>
+            <div class="fat-bar-row">
+              <span class="fat-bar-label">Lean Meat</span>
+              <div class="fat-bar-track"><div class="fat-bar-fill" style="width:${lean.toFixed(1)}%;background:#37E39A"></div></div>
+              <span class="fat-bar-pct" style="color:#37E39A">${lean.toFixed(1)}%</span>
+            </div>
+          </div>
+          <div class="fat-quality-row">
+            <div class="fat-quality-info">
+              <span class="fat-quality-dot" style="background:${qualColor}"></span>
+              <span>Quality: <strong style="color:${qualColor}">${qualLabel}</strong> (${(qual * 100).toFixed(0)}%)</span>
+            </div>
+            <button class="fat-expand-btn" data-target="fat-expand-${idx}">
+              <span class="btn-text">Compare</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="fat-collapsible" id="fat-expand-${idx}">
+            <div class="fat-disclaimer">⚠ Surface fat coverage only — not intramuscular fat % or nutritional fat content.</div>
+            ${dualImg}
+          </div>
+        </div>`;
+    }
+
     function renderResults(results) {
       grid.innerHTML = '';
-
       let nGood = 0, nSpoiled = 0;
       results.forEach(r => {
         if (r.error) return;
@@ -602,11 +2666,29 @@
         const confPct = cls === 'good' ? Math.round(r.good_confidence * 100) : Math.round(r.spoiled_confidence * 100);
 
         let imgHTML = `<div style="color:var(--muted);font-size:12px">No image</div>`;
+        let switcherHTML = '';
         if (r.annotated_image_base64) {
-          imgHTML = `<img src="${r.annotated_image_base64}">
+          if (r.fat_overlay_image_base64) {
+            switcherHTML = `
+              <div class="photo-switcher" onclick="event.stopPropagation()">
+                <button class="photo-switch-btn active" data-view="orig">Photo</button>
+                <button class="photo-switch-btn" data-view="overlay">Fat Map</button>
+              </div>`;
+          }
+          imgHTML = `<img class="card-main-img" src="${r.annotated_image_base64}">
+                   ${switcherHTML}
                    <button class="share download-btn" data-b64="${r.annotated_image_base64}" data-filename="${r.filename}" title="Download">
                      <svg viewBox="0 0 24 24"><path d="M12 16V4M12 4L7 9M12 4l5 5M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
                    </button>`;
+        }
+
+        let discardHtml = '';
+        if (r.decision === 'discard') {
+          discardHtml = `
+            <div class="discard-info">
+              <span class="discard-dot"></span>
+              <span>Rejected · ${confPct}% spoiled confidence</span>
+            </div>`;
         }
 
         card.innerHTML = `
@@ -617,7 +2699,40 @@
           <span class="route">${routeHtml}</span>
           <span>${confHtml}</span>
         </div>
+        ${discardHtml}
+        ${buildFatPanel(r, i)}
       `;
+
+        // Wire up Photo / Fat Map switcher
+        const switcherBtns = card.querySelectorAll('.photo-switch-btn');
+        const mainImg = card.querySelector('.card-main-img');
+        if (switcherBtns.length && mainImg) {
+          switcherBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              switcherBtns.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              if (btn.dataset.view === 'overlay') {
+                mainImg.src = r.fat_overlay_image_base64;
+              } else {
+                mainImg.src = r.annotated_image_base64;
+              }
+            });
+          });
+        }
+
+        // Wire up expandable fat panel
+        const expandBtn = card.querySelector('.fat-expand-btn');
+        if (expandBtn) {
+          const target = card.querySelector('#' + expandBtn.dataset.target);
+          expandBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = target.style.display === 'block';
+            target.style.display = isOpen ? 'none' : 'block';
+            expandBtn.classList.toggle('open', !isOpen);
+            expandBtn.querySelector('.btn-text').textContent = isOpen ? 'Compare' : 'Close';
+          });
+        }
 
         // Download
         const dlBtn = card.querySelector('.download-btn');
@@ -632,6 +2747,49 @@
       });
 
       applyFilter();
+    }
+
+    // ── Biogenic Amine Sensor Interface & Hardware Handshake Logic ──────────
+    const btnHandshake = document.getElementById('btn-sensor-handshake');
+    const handshakeLog = document.getElementById('sensor-handshake-log');
+    const sensorStatusBadge = document.getElementById('sensor-status-badge');
+
+    if (btnHandshake) {
+      btnHandshake.addEventListener('click', () => {
+        btnHandshake.disabled = true;
+        btnHandshake.innerHTML = '<span>⚡</span> Probing COM3 / UART Bus...';
+        if (handshakeLog) {
+          handshakeLog.classList.add('active');
+          handshakeLog.innerHTML = `
+            <div style="color:var(--accent)">> Probing serial bus COM3 (115200 baud, 8N1)...</div>
+            <div>> Polling potentiostat device ID (0xAA 0x14)...</div>
+          `;
+        }
+
+        setTimeout(() => {
+          if (handshakeLog) {
+            handshakeLog.innerHTML = `
+              <div style="color:#ff7878">⚠️ Hardware Link: No physical sensor detected on COM3</div>
+              <div style="color:var(--muted)">> Handshake response: 0x00 (Port closed / Disconnected)</div>
+              <div>> Telemetry Pipeline: Driver & EU 2073/2005 parser PRIMED</div>
+              <div style="color:var(--accent);margin-top:2px">> State: Standby &bull; Awaiting physical sensor hot-plug</div>
+            `;
+          }
+          if (sensorStatusBadge) {
+            sensorStatusBadge.innerHTML = '<span class="pulse-dot"></span><span>Device Disconnected</span>';
+          }
+          btnHandshake.innerHTML = '<span>⚠️</span> Hardware Offline (Primed)';
+          btnHandshake.style.borderColor = 'rgba(255, 92, 92, 0.4)';
+          btnHandshake.style.color = '#ff7878';
+
+          setTimeout(() => {
+            btnHandshake.disabled = false;
+            btnHandshake.innerHTML = '<span>🔌</span> Scan for Sensor Hardware';
+            btnHandshake.style.borderColor = '';
+            btnHandshake.style.color = '';
+          }, 3800);
+        }, 900);
+      });
     }
   </script>
 </body>

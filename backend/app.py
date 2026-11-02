@@ -22,7 +22,7 @@ from contextlib import asynccontextmanager
 import cv2
 import numpy as np
 import yaml
-from fastapi import FastAPI, File, UploadFile, HTTPException, Request
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, Form, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from PIL import Image, ImageOps
@@ -30,6 +30,16 @@ from PIL import Image, ImageOps
 from freshness_classifier import FreshnessClassifier
 from pipeline import process_image
 from annotate import annotate_image
+import database as db
+from shelf_life_engine import predict_shelf_life
+
+# Fat analyser — imported lazily so the server starts even if
+# segmentation_models_pytorch is not installed (the module guards itself).
+try:
+    from fat_analyser import FatAnalyser
+    _FAT_ANALYSER_AVAILABLE = True
+except ImportError:
+    _FAT_ANALYSER_AVAILABLE = False
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -81,12 +91,21 @@ def decode_upload_bytes(contents: bytes) -> np.ndarray | None:
 # Startup / shutdown
 # ---------------------------------------------------------------------------
 _classifier: FreshnessClassifier | None = None
+_fat_analyser = None   # FatAnalyser | None  (type not annotated to avoid import error)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load models once at server startup."""
-    global _classifier
+    """Load models once at server startup and initialize SQLite database."""
+    global _classifier, _fat_analyser
+    
+    # Initialize SQLite tables
+    try:
+        db.init_db()
+        print("[app] SQLite database initialized at data/marbl.db")
+    except Exception as exc:
+        print(f"[app] ERROR initializing SQLite database: {exc}")
+
     # utf-8-sig strips the BOM that Windows text editors sometimes write
     with open(CONFIG_PATH, encoding='utf-8-sig') as f:
         cfg = yaml.safe_load(f)
@@ -106,6 +125,34 @@ async def lifespan(app: FastAPI):
         class_names=fc.get("class_names", ("good", "spoiled")),
         good_confidence_threshold=float(fc.get("good_confidence_threshold", 0.60)),
     )
+
+    # ── Module 3: Fat Analyser ─────────────────────────────────────────────────
+    fa_cfg = cfg.get("fat_analyser", {})
+    if fa_cfg.get("enabled", False):
+        if not _FAT_ANALYSER_AVAILABLE:
+            print("[app] WARNING: fat_analyser.enabled=true but 'segmentation_models_pytorch' "
+                  "is not installed. Fat analysis disabled. "
+                  "Install with: pip install segmentation-models-pytorch")
+        else:
+            fa_weights = fa_cfg.get("weights", "../models/fat_segmenter.pt")
+            fa_weights_path = str(BACKEND_DIR / fa_weights) if not os.path.isabs(fa_weights) \
+                else fa_weights
+            if not os.path.exists(fa_weights_path):
+                fa_weights_path = str((BACKEND_DIR / Path(fa_weights)).resolve())
+            if os.path.exists(fa_weights_path):
+                _fat_analyser = FatAnalyser(
+                    weights_path=fa_weights_path,
+                    input_size=int(fa_cfg.get("input_size", 256)),
+                    device=fa_cfg.get("device", "cpu"),
+                    fat_thresholds=fa_cfg.get("fat_thresholds"),
+                )
+                print("[app] Fat analyser loaded. Module 3 (visible fat coverage) is active.")
+            else:
+                print(f"[app] WARNING: fat_analyser.enabled=true but weights not found at "
+                      f"'{fa_weights_path}'. Run scripts/train_fat_segmenter.py first.")
+    else:
+        print("[app] Fat analyser disabled (fat_analyser.enabled: false in config.yaml).")
+
     print("[app] Models loaded. Server ready.")
     yield
     print("[app] Shutdown.")
@@ -152,12 +199,132 @@ async def index(request: Request):
     return FileResponse(str(file_path), media_type="text/html")
 
 
+# ---------------------------------------------------------------------------
+# Module 1: Batch Registration & Shelf-Life API
+# ---------------------------------------------------------------------------
+
+@app.post("/api/shelf-life/estimate")
+async def estimate_shelf_life_endpoint(payload: dict = Body(...)):
+    """Calculate predictive shelf life in real time as user edits intake form."""
+    try:
+        pred = predict_shelf_life(
+            meat_type=payload.get("meat_type", "beef"),
+            initial_ph=float(payload.get("initial_ph", 5.6)),
+            receiving_temp_c=float(payload.get("receiving_temp_c", 2.0)),
+            time_since_slaughter_hrs=float(payload.get("time_since_slaughter_hrs", 24.0)),
+            transport_temp_avg_c=float(payload.get("transport_temp_avg_c", 2.0)),
+            transport_duration_hrs=float(payload.get("transport_duration_hrs", 4.0)),
+            transport_excursion=bool(payload.get("transport_excursion", False)),
+            packaging_type=payload.get("packaging_type", "air"),
+        )
+        return JSONResponse(content={
+            "shelf_life_days": pred.shelf_life_days,
+            "shelf_life_min_days": pred.shelf_life_min_days,
+            "shelf_life_max_days": pred.shelf_life_max_days,
+            "confidence_score": pred.confidence_score,
+            "recommended_temp_c": pred.recommended_temp_c,
+            "recommended_conditions": pred.recommended_conditions,
+            "warnings": pred.warnings,
+            "growth_rate_per_day": pred.growth_rate_per_day,
+            "current_log_cfu": pred.current_log_cfu,
+        })
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Shelf-life calculation error: {exc}")
+
+
+@app.post("/api/batch/create")
+async def create_batch_endpoint(payload: dict = Body(...)):
+    """Register incoming meat batch (Module 1) and calculate shelf life."""
+    required = ["meat_type", "initial_ph", "receiving_temp_c", "initial_weight_val", "packaging_type"]
+    missing = [k for k in required if k not in payload or payload[k] is None]
+    if missing:
+        raise HTTPException(status_code=422, detail=f"Missing required intake fields: {', '.join(missing)}")
+
+    # 1. Compute predictive shelf life
+    pred = predict_shelf_life(
+        meat_type=payload.get("meat_type", "beef"),
+        initial_ph=float(payload.get("initial_ph", 5.6)),
+        receiving_temp_c=float(payload.get("receiving_temp_c", 2.0)),
+        time_since_slaughter_hrs=float(payload.get("time_since_slaughter_hrs", 24.0)),
+        transport_temp_avg_c=float(payload.get("transport_temp_avg_c", 2.0)),
+        transport_duration_hrs=float(payload.get("transport_duration_hrs", 4.0)),
+        transport_excursion=bool(payload.get("transport_excursion", False)),
+        packaging_type=payload.get("packaging_type", "air"),
+    )
+
+    # 2. Prepare database record
+    batch_data = {
+        "batch_id": payload.get("batch_id") or db.generate_batch_id(),
+        "meat_type": payload["meat_type"],
+        "initial_ph": float(payload["initial_ph"]),
+        "receiving_temp_c": float(payload["receiving_temp_c"]),
+        "time_since_slaughter_hrs": float(payload.get("time_since_slaughter_hrs", 24.0)),
+        "transport_temp_avg_c": float(payload.get("transport_temp_avg_c", 2.0)),
+        "transport_duration_hrs": float(payload.get("transport_duration_hrs", 4.0)),
+        "transport_excursion": bool(payload.get("transport_excursion", False)),
+        "packaging_type": payload["packaging_type"],
+        "initial_weight_val": float(payload["initial_weight_val"]),
+        "initial_weight_unit": payload.get("initial_weight_unit", "kg"),
+        "shelf_life_days": pred.shelf_life_days,
+        "shelf_life_min_days": pred.shelf_life_min_days,
+        "shelf_life_max_days": pred.shelf_life_max_days,
+        "confidence_score": pred.confidence_score,
+        "recommended_temp_c": pred.recommended_temp_c,
+        "warnings": pred.warnings,
+        "status": "intake_complete",
+    }
+
+    try:
+        created = db.create_batch(batch_data)
+        return JSONResponse(content={"batch": created, "shelf_life": {
+            "shelf_life_days": pred.shelf_life_days,
+            "shelf_life_min_days": pred.shelf_life_min_days,
+            "shelf_life_max_days": pred.shelf_life_max_days,
+            "recommended_temp_c": pred.recommended_temp_c,
+            "recommended_conditions": pred.recommended_conditions,
+            "warnings": pred.warnings,
+        }})
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Database save error: {exc}")
+
+
+@app.get("/api/batch/{batch_id}")
+async def get_batch_endpoint(batch_id: str):
+    """Retrieve details for a specific batch."""
+    batch = db.get_batch(batch_id)
+    if not batch:
+        raise HTTPException(status_code=404, detail=f"Batch '{batch_id}' not found.")
+    return JSONResponse(content={"batch": batch})
+
+
+@app.get("/api/batches")
+async def list_batches_endpoint():
+    """List recent registered batches."""
+    batches = db.list_batches(limit=50)
+    return JSONResponse(content={"batches": batches})
+
+
+@app.get("/api/batch/{batch_id}/records")
+async def get_batch_records_endpoint(batch_id: str):
+    """Get all visual inspection records for a batch."""
+    records = db.get_batch_inspection_records(batch_id)
+    return JSONResponse(content={"records": records})
+
+
+# ---------------------------------------------------------------------------
+# Module 2 & 3: Visual Inspection API (Linked to Active Batch)
+# ---------------------------------------------------------------------------
+
 @app.post("/api/classify")
-async def classify(files: list[UploadFile] = File(...)):
+async def classify(
+    files: list[UploadFile] = File(...),
+    batch_id: str | None = Form(None),
+):
     """Classify one or more uploaded meat photos.
 
     Returns a JSON object with a 'results' list, one entry per uploaded file,
-    in the same order as the files were uploaded.
+    in the same order as the files were uploaded. If batch_id is provided,
+    results are archived into the database under that batch.
     """
     if not files:
         raise HTTPException(status_code=400, detail="No files uploaded.")
@@ -182,6 +349,7 @@ async def classify(files: list[UploadFile] = File(...)):
                 filename=upload.filename or "upload",
                 classifier=_classifier,
                 cfg=cfg,
+                fat_analyser=_fat_analyser,
             )
         except Exception as exc:
             results.append({
@@ -189,6 +357,14 @@ async def classify(files: list[UploadFile] = File(...)):
                 "error": f"Processing error: {exc}",
             })
             continue
+
+        # Link batch_id if provided
+        if batch_id:
+            result["batch_id"] = batch_id
+            try:
+                db.add_inspection_record(batch_id, result)
+            except Exception as db_exc:
+                print(f"[app] Warning: failed to save record to DB: {db_exc}")
 
         # ── Annotate: draw results onto a resized copy of the image ──
         try:
@@ -205,10 +381,11 @@ async def classify(files: list[UploadFile] = File(...)):
 
         results.append(result)
 
-    return JSONResponse(content={"results": results})
+    return JSONResponse(content={"results": results, "batch_id": batch_id})
 
 
 @app.get("/health")
 async def health():
     """Quick liveness check."""
-    return {"status": "ok", "model_loaded": _classifier is not None}
+    return {"status": "ok", "model_loaded": _classifier is not None,
+            "fat_analyser_loaded": _fat_analyser is not None}

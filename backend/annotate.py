@@ -8,6 +8,10 @@ Called by app.py after process_image() returns a result dict.
 Returns raw JPEG bytes, or None if annotation cannot proceed
 (no box in result, error case, or an unexpected exception).
 
+Module 3 extension: if the result contains fat_coverage_pct (from the fat
+analyser), a secondary "FAT · X%" badge is drawn below the freshness pill.
+The fat badge is colour-coded by category: low=green, moderate=amber, high=orange.
+
 This is a presentation layer only — it does NOT modify or call any
 classification logic.
 """
@@ -30,6 +34,13 @@ _FONT_PATH  = ASSETS_DIR / "SpaceGrotesk-Bold.ttf"
 _GOOD_COLOR    = (55, 227, 154)   # #37E39A
 _SPOILED_COLOR = (255, 92, 92)    # #FF5C5C
 _REVIEW_COLOR  = (255, 201, 60)   # #FFC93C
+
+# Module 3 — fat badge colours keyed by fat_category value
+_FAT_BADGE_COLOR = {
+    "low":      (55, 227, 154),   # green  — same as good
+    "moderate": (255, 201, 60),   # amber
+    "high":     (255, 120, 30),   # orange — visual alert
+}
 
 # Box outline color by decision value
 _BOX_COLOR_BY_DECISION = {
@@ -129,13 +140,18 @@ def annotate_image(image_bgr: np.ndarray, result: dict) -> bytes | None:
 
         draw = ImageDraw.Draw(pil_img)
 
-        # ── 3.  Scale bounding box ──────────────────────────────────────
-        bx, by, bw, bh = (int(v * scale) for v in result["box"])
-        # Clamp to image bounds
-        bx = max(0, min(bx, img_w - 1))
-        by = max(0, min(by, img_h - 1))
-        bw = max(1, min(bw, img_w - bx))
-        bh = max(1, min(bh, img_h - by))
+        # ── 3.  Scale bounding box(es) ──────────────────────────────────
+        all_boxes = result.get("boxes") or [result["box"]]
+        scaled_boxes = []
+        for raw_b in all_boxes:
+            sbx, sby, sbw, sbh = (int(v * scale) for v in raw_b)
+            sbx = max(0, min(sbx, img_w - 1))
+            sby = max(0, min(sby, img_h - 1))
+            sbw = max(1, min(sbw, img_w - sbx))
+            sbh = max(1, min(sbh, img_h - sby))
+            scaled_boxes.append((sbx, sby, sbw, sbh))
+
+        bx, by, bw, bh = scaled_boxes[0] if scaled_boxes else (0, 0, img_w, img_h)
 
         # ── 4.  Pick colors based on decision / label ──────────────────
         decision = result.get("decision", "")
@@ -154,15 +170,16 @@ def annotate_image(image_bgr: np.ndarray, result: dict) -> bytes | None:
 
         txt_color = _text_color_for_bg(pill_color)
 
-        # ── 5.  Draw rounded bounding box ─────────────────────────────
+        # ── 5.  Draw rounded bounding boxes ───────────────────────────
         box_w = max(2, int(min(img_w, img_h) * 0.004))
-        _rounded_rect(
-            draw,
-            (bx, by, bx + bw, by + bh),
-            radius=max(8, int(min(bw, bh) * 0.05)),
-            outline=box_color,
-            width=box_w,
-        )
+        for (sbx, sby, sbw, sbh) in scaled_boxes:
+            _rounded_rect(
+                draw,
+                (sbx, sby, sbx + sbw, sby + sbh),
+                radius=max(6, int(min(sbw, sbh) * 0.06)),
+                outline=box_color,
+                width=box_w,
+            )
 
         # ── 6.  Build label text ───────────────────────────────────────
         if decision == "needs_manual_review":
@@ -209,7 +226,43 @@ def annotate_image(image_bgr: np.ndarray, result: dict) -> bytes | None:
             fill=txt_color,
         )
 
-        # ── 8.  Encode to JPEG ─────────────────────────────────────────
+        # ── 8.  Module 3 — optional fat coverage badge ────────────────────
+        fat_pct = result.get("fat_coverage_pct")
+        fat_category = result.get("fat_category")
+        if fat_pct is not None and fat_category is not None and label != "spoiled":
+            fat_text = f"FAT \u00b7 {fat_pct:.1f}%"
+            fat_color = _FAT_BADGE_COLOR.get(fat_category, _REVIEW_COLOR)
+            fat_txt_color = _text_color_for_bg(fat_color)
+
+            fat_bbox = draw.textbbox((0, 0), fat_text, font=font)
+            fat_tw = fat_bbox[2] - fat_bbox[0]
+            fat_th = fat_bbox[3] - fat_bbox[1]
+            fat_off_x = -fat_bbox[0]
+            fat_off_y = -fat_bbox[1]
+
+            fat_pw = fat_tw + pad_x * 2
+            fat_ph = fat_th + pad_y * 2
+
+            # Position: directly below the freshness pill, same left edge
+            fpx = px
+            fpy = py + pill_h + 6
+            fpx = max(2, min(fpx, img_w - fat_pw - 2))
+            fpy = max(2, min(fpy, img_h - fat_ph - 2))
+
+            _rounded_rect(
+                draw,
+                (fpx, fpy, fpx + fat_pw, fpy + fat_ph),
+                radius=int(fat_ph / 2.2),
+                fill=fat_color,
+            )
+            draw.text(
+                (fpx + pad_x + fat_off_x, fpy + pad_y + fat_off_y),
+                fat_text,
+                font=font,
+                fill=fat_txt_color,
+            )
+
+        # ── 9.  Encode to JPEG ─────────────────────────────────────────────
         buf = io.BytesIO()
         pil_img.save(buf, format="JPEG", quality=_JPEG_QUALITY,
                      optimize=True, progressive=True)

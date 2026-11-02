@@ -558,6 +558,522 @@
     .upload-link:hover {
       color: var(--ink);
     }
+
+    /* Discard card details */
+    .card.spoiled {
+      border-color: rgba(255, 92, 92, 0.3);
+      background: rgba(255, 92, 92, 0.03);
+    }
+
+    .discard-info {
+      padding: 0 16px 14px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--spoiled);
+    }
+
+    .discard-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--spoiled);
+      flex-shrink: 0;
+    }
+
+    /* Interactive photo switcher pill */
+    .photo-switcher {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: flex;
+      background: rgba(16, 19, 10, 0.78);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 20px;
+      padding: 2px;
+      gap: 2px;
+      z-index: 5;
+    }
+
+    .photo-switch-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
+      padding: 3px 9px;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .photo-switch-btn:hover {
+      color: var(--ink);
+    }
+
+    .photo-switch-btn.active {
+      background: rgba(255, 255, 255, 0.16);
+      color: var(--ink);
+    }
+
+    /* ── Module 3: Dynamic Visible Fat Coverage panel ────────────────── */
+    .fat-panel {
+      border-top: 1px solid var(--line);
+      padding: 11px 16px 13px;
+    }
+
+    .fat-bars { display: flex; flex-direction: column; gap: 7px; }
+
+    .fat-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+
+    .fat-bar-label { width: 68px; color: var(--muted); flex-shrink: 0; }
+
+    .fat-bar-track {
+      flex: 1;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--line);
+      overflow: hidden;
+    }
+
+    .fat-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+
+    .fat-bar-pct {
+      width: 40px;
+      text-align: right;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fat-category-badge {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      padding: 1.5px 6px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .fat-category-badge.low      { background: rgba(55,227,154,.15); color: #37E39A; }
+    .fat-category-badge.moderate { background: rgba(255,201,60,.15);  color: #FFC93C; }
+    .fat-category-badge.high     { background: rgba(255,120,30,.15);  color: #FF781E; }
+
+    .fat-quality-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+      padding-top: 7px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .fat-quality-info {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .fat-quality-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .fat-expand-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      font-size: 10.5px;
+      font-family: inherit;
+      padding: 2.5px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: background .15s, border-color .15s;
+    }
+
+    .fat-expand-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .fat-expand-btn .chevron {
+      width: 10px;
+      height: 10px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: transform 0.2s ease;
+    }
+
+    .fat-expand-btn.open .chevron {
+      transform: rotate(180deg);
+    }
+
+    .fat-collapsible {
+      display: none;
+      padding-top: 10px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fat-disclaimer {
+      font-size: 10.5px;
+      color: var(--muted);
+      background: rgba(255, 201, 60, 0.08);
+      border: 1px solid rgba(255, 201, 60, 0.18);
+      border-radius: 7px;
+      padding: 5px 9px;
+      margin-bottom: 9px;
+      line-height: 1.45;
+    }
+
+    .fat-dual-img {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .fat-img-wrap {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+      aspect-ratio: 4/3;
+    }
+
+    .fat-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .fat-img-label {
+      position: absolute;
+      bottom: 5px;
+      left: 6px;
+      font-size: 9.5px;
+      color: rgba(255,255,255,0.75);
+      background: rgba(0,0,0,0.65);
+      padding: 1.5px 5px;
+      border-radius: 4px;
+      backdrop-filter: blur(2px);
+    }
+
+    /* ── Mobile Module 1: Intake & Quality Styles ────────────────────── */
+    .mobile-nav-tabs {
+      position: relative;
+      display: flex;
+      background: var(--surface);
+      border-radius: 20px;
+      padding: 3px;
+      border: 0.5px solid var(--line);
+      margin-bottom: 16px;
+      user-select: none;
+      isolation: isolate;
+    }
+
+    .m-nav-slider {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      left: 0;
+      background: var(--accent);
+      border-radius: 17px;
+      transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.3, 1), width 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+      z-index: 1;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(214, 255, 63, 0.25);
+    }
+
+    .mobile-nav-tab {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      text-align: center;
+      padding: 8px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      border-radius: 17px;
+      border: none;
+      background: transparent !important;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .mobile-nav-tab.active {
+      color: #10130a !important;
+      font-weight: 700;
+    }
+
+    .m-batch-banner {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--accent);
+      border-radius: 12px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .m-batch-banner strong {
+      color: var(--accent);
+    }
+
+    .m-form-card {
+      background: var(--surface);
+      border: 0.5px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .m-form-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .m-form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .m-form-group label {
+      font-size: 11.5px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .m-input {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--ink);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .m-input:focus {
+      border-color: var(--accent);
+    }
+
+    .m-pill-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .m-pill-opt {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 4px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .m-pill-opt .icon { font-size: 20px; }
+    .m-pill-opt .label { font-size: 11px; font-weight: 600; color: var(--muted); }
+
+    .m-pill-opt.selected {
+      border-color: var(--accent);
+      background: rgba(214, 255, 63, 0.08);
+    }
+    .m-pill-opt.selected .label { color: var(--ink); }
+
+    .m-shelf-display {
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px 12px;
+      text-align: center;
+    }
+
+    .m-shelf-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.1;
+    }
+
+    .m-shelf-sub {
+      font-size: 11.5px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .m-alert {
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      line-height: 1.4;
+      display: flex;
+      gap: 6px;
+    }
+
+    .m-alert.danger {
+      background: rgba(255, 92, 92, 0.1);
+      border: 1px solid rgba(255, 92, 92, 0.3);
+      color: var(--spoiled);
+    }
+
+    .m-alert.warning {
+      background: rgba(255, 201, 60, 0.1);
+      border: 1px solid rgba(255, 201, 60, 0.3);
+      color: var(--review);
+    }
+
+    .m-drip-box {
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 11.5px;
+    }
+
+    /* ── Mobile Biogenic Amine Sensor Card ────────────────────────────── */
+    .m-sensor-card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .m-sensor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .m-sensor-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--ink);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+    }
+
+    .m-sensor-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      background: rgba(255, 92, 92, 0.12);
+      border: 1px solid rgba(255, 92, 92, 0.3);
+      color: var(--spoiled);
+      text-transform: uppercase;
+    }
+
+    .m-pulse-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--spoiled);
+      animation: pulseAnim 2s infinite ease-in-out;
+    }
+
+    .m-sensor-img-wrap {
+      background: #090a09;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .m-sensor-img-wrap img {
+      width: 100%;
+      max-height: 60px;
+      object-fit: contain;
+    }
+
+    .m-sensor-strip-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 4px;
+      font-size: 8.5px;
+      color: var(--muted);
+      border-top: 1px dashed rgba(255, 255, 255, 0.06);
+      padding-top: 3px;
+    }
+
+    .m-sensor-specs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 10.5px;
+    }
+
+    .m-spec-val {
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 11px;
+    }
   </style>
 </head>
 
@@ -574,48 +1090,216 @@
         </div>
       </header>
 
-      <!-- Camera panel -->
-      <div id="camera-panel">
-        <div class="camera-viewport">
-          <video id="camera-video" autoplay playsinline muted></video>
-        </div>
-        <canvas id="camera-canvas"></canvas>
-        <div id="camera-error"></div>
-        <div class="cam-hint">
-          <strong>Tip:</strong> place an ID card next to the meat for accurate size measurement.
-        </div>
-        <button id="capture-btn-inline" type="button" disabled>
-          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="3"></circle>
-          </svg>
-          capture photo
-        </button>
+      <div class="mobile-nav-tabs" id="mobile-nav-tabs">
+        <div class="m-nav-slider" id="m-nav-slider"></div>
+        <button type="button" class="mobile-nav-tab active" id="m-tab-intake">Intake & Quality</button>
+        <button type="button" class="mobile-nav-tab" id="m-tab-scan">Visual Scan</button>
       </div>
 
-      <!-- Upload zone -->
-      <div id="drop-zone" role="button" tabindex="0">
-        <div class="drop-icon">🥩</div>
-        <div class="drop-title">Drop photos here</div>
-        <div class="drop-sub">or tap to choose from gallery<br>JPEG · PNG · up to 20 MB<br><br><strong
-            style="color:var(--review)">Tip:</strong> include an ID card next to the meat for accurate size.</div>
-        <input id="file-input" type="file" accept="image/*" multiple />
+      <!-- ── MODULE 1: MOBILE INTAKE ──────────────────────────────────── -->
+      <div id="m-view-module1">
+        <div class="m-form-card">
+          <div class="m-form-title">📦 Batch Registration</div>
+          <div class="m-form-group">
+            <label>Batch ID</label>
+            <div style="display:flex;gap:6px">
+              <input type="text" id="m-intake-batch-id" class="m-input" style="flex:1;font-weight:700" readonly>
+              <button type="button" id="m-btn-regen-batch" style="background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:0 12px;color:var(--ink);cursor:pointer">🔄</button>
+            </div>
+          </div>
+
+          <div class="m-form-title" style="margin-top:6px">🥩 Meat Species</div>
+          <div class="m-pill-grid" id="m-species-grid">
+            <div class="m-pill-opt selected" data-value="beef">
+              <span class="icon">🥩</span>
+              <span class="label">Beef</span>
+            </div>
+            <div class="m-pill-opt" data-value="chicken">
+              <span class="icon">🍗</span>
+              <span class="label">Chicken</span>
+            </div>
+            <div class="m-pill-opt" data-value="mutton">
+              <span class="icon">🍖</span>
+              <span class="label">Mutton</span>
+            </div>
+            <div class="m-pill-opt" data-value="pork">
+              <span class="icon">🥓</span>
+              <span class="label">Pork</span>
+            </div>
+          </div>
+
+          <div class="m-form-title" style="margin-top:6px">🌡️ Thermal & Quality</div>
+          <div class="m-form-group">
+            <label>Initial pH <span id="m-ph-badge" style="color:var(--good);font-weight:600">5.62</span></label>
+            <input type="range" id="m-ph-slider" min="4.8" max="7.0" step="0.05" value="5.62" style="accent-color:var(--accent)">
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="m-form-group">
+              <label>Receiving Temp (°C)</label>
+              <input type="number" id="m-rec-temp" class="m-input" step="0.1" value="1.8">
+            </div>
+            <div class="m-form-group">
+              <label>Slaughter (hrs ago)</label>
+              <input type="number" id="m-slaughter-hrs" class="m-input" step="1" value="24">
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="m-form-group">
+              <label>Transit Temp (°C)</label>
+              <input type="number" id="m-trans-temp" class="m-input" step="0.1" value="2.0">
+            </div>
+            <div class="m-form-group">
+              <label>Transit Time (hrs)</label>
+              <input type="number" id="m-trans-dur" class="m-input" step="0.5" value="4.0">
+            </div>
+          </div>
+
+          <label style="display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--ink);cursor:pointer">
+            <input type="checkbox" id="m-trans-excursion" style="accent-color:var(--spoiled);width:15px;height:15px">
+            <span>⚠️ Temperature spike / break detected</span>
+          </label>
+
+          <div class="m-form-title" style="margin-top:6px">📦 Packaging Atmosphere</div>
+          <div class="m-pill-grid" id="m-pkg-grid" style="grid-template-columns:repeat(3, 1fr)">
+            <div class="m-pill-opt" data-value="air">
+              <span class="icon">💨</span>
+              <span class="label">Air</span>
+            </div>
+            <div class="m-pill-opt selected" data-value="vacuum">
+              <span class="icon">📦</span>
+              <span class="label">Vacuum</span>
+            </div>
+            <div class="m-pill-opt" data-value="map">
+              <span class="icon">🛡️</span>
+              <span class="label">MAP</span>
+            </div>
+          </div>
+
+          <div class="m-form-group" style="margin-top:6px">
+            <label>Initial Meat Weight <span>(Saved for Drip-Loss)</span></label>
+            <div style="display:flex;gap:6px">
+              <input type="number" id="m-weight-val" class="m-input" style="flex:1" step="0.1" value="25.0">
+              <select id="m-weight-unit" class="m-input" style="width:64px;padding:10px 4px;text-align:center">
+                <option value="kg" selected>kg</option>
+                <option value="g">g</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Shelf Life Prediction Card -->
+        <div class="m-form-card">
+          <div class="m-form-title">🔬 Estimated Shelf Life</div>
+          <div class="m-shelf-display">
+            <div class="m-shelf-val" id="m-pred-days">—</div>
+            <div class="m-shelf-sub" id="m-pred-ci">Calculating...</div>
+          </div>
+          <div id="m-pred-rec" style="font-size:11.5px;color:var(--muted);line-height:1.4">
+            <strong>Storage:</strong> Maintain 0°C to +2°C.
+          </div>
+          <div id="m-pred-warnings" style="display:flex;flex-direction:column;gap:6px"></div>
+
+          <!-- Staged Drip-Loss Box -->
+          <div class="m-drip-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <strong>🧪 Drip Loss Evaluation</strong>
+              <span style="font-size:9.5px;background:rgba(255,201,60,0.15);color:var(--review);padding:1px 6px;border-radius:4px;font-weight:700">IN DEV</span>
+            </div>
+            <p style="color:var(--muted);margin-bottom:8px">48h standardized storage test at 4°C. Weight saved against Batch ID.</p>
+            <div style="display:flex;justify-content:space-between;font-size:12px">
+              <span>Initial Wt: <strong id="m-drip-init-wt" style="color:var(--ink)">25.0 kg</strong></span>
+              <span style="color:var(--muted)">Final Wt: <em>Pending</em></span>
+            </div>
+          </div>
+
+          <button type="button" class="scan-btn" id="m-btn-save-proceed" style="margin-top:6px">
+            Save Batch & Start Inspection →
+          </button>
+        </div>
       </div>
 
-      <!-- Shared thumbnail queue -->
-      <div id="preview-strip"></div>
+      <!-- ── MODULE 2: MOBILE CAMERA SCAN ─────────────────────────────── -->
+      <div id="m-view-module2" style="display:none">
+        <div class="m-batch-banner" id="m-batch-banner">
+          <div>Batch: <strong id="m-banner-id">MB-PENDING</strong> · <span id="m-banner-meta">Beef · Vacuum</span></div>
+          <button type="button" id="m-btn-change-batch" style="background:none;border:none;color:var(--muted);font-size:11.5px;text-decoration:underline;cursor:pointer">change</button>
+        </div>
 
-      <div class="spinner" id="spinner"></div>
+        <!-- Camera panel -->
+        <div id="camera-panel">
+          <div class="camera-viewport">
+            <video id="camera-video" autoplay playsinline muted></video>
+          </div>
+          <canvas id="camera-canvas"></canvas>
+          <div id="camera-error"></div>
+          <div class="cam-hint">
+            <strong>Tip:</strong> place an ID card next to the meat for accurate size measurement.
+          </div>
+          <button id="capture-btn-inline" type="button" disabled>
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            capture photo
+          </button>
+        </div>
 
-      <!-- Summary -->
-      <div class="summary" id="summary-strip"></div>
+        <!-- Upload zone -->
+        <div id="drop-zone" role="button" tabindex="0">
+          <div class="drop-icon">🥩</div>
+          <div class="drop-title">Drop photos here</div>
+          <div class="drop-sub">or tap to choose from gallery<br>JPEG · PNG · up to 20 MB<br><br><strong
+              style="color:var(--review)">Tip:</strong> include an ID card next to the meat for accurate size.</div>
+          <input id="file-input" type="file" accept="image/*" multiple />
+        </div>
 
-      <!-- Results -->
-      <div id="results-feed"></div>
+        <!-- Shared thumbnail queue -->
+        <div id="preview-strip"></div>
+
+        <div class="spinner" id="spinner"></div>
+
+        <!-- Mobile Biogenic Amine Sensor Card -->
+        <div class="m-sensor-card">
+          <div class="m-sensor-head">
+            <div class="m-sensor-title">
+              <span>⚡</span> Biogenic Amine Sensor
+            </div>
+            <span class="m-sensor-badge">
+              <span class="m-pulse-dot"></span>
+              <span>Device Disconnected</span>
+            </span>
+          </div>
+          <div class="m-sensor-img-wrap">
+            <img src="/static/sensor_strip.png" alt="Biogenic Amine Sensor Strip">
+            <div class="m-sensor-strip-labels">
+              <span>▲ Au Micro-Electrodes</span>
+              <span>DAO Membrane Well ▲</span>
+            </div>
+          </div>
+          <div class="m-sensor-specs">
+            <div>
+              <div style="color:var(--muted);font-size:9.5px">Analytes</div>
+              <div class="m-spec-val">Putrescine / Cadaverine</div>
+            </div>
+            <div>
+              <div style="color:var(--muted);font-size:9.5px">Hardware Status</div>
+              <div class="m-spec-val" style="color:var(--muted)">— (Awaiting Sensor)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="summary" id="summary-strip"></div>
+
+        <!-- Results -->
+        <div id="results-feed"></div>
+      </div>
     </div>
 
-    <div class="bottom">
+    <div class="bottom" id="m-bottom-bar" style="display:none">
       <button class="scan-btn" id="check-btn" style="display:none">
         <svg viewBox="0 0 24 24">
           <path d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M20 8V6a2 2 0 00-2-2h-2M20 16v2a2 2 0 01-2 2h-2" />
@@ -635,9 +1319,233 @@
   </div>
 
   <script type="module">
-    import { classifyImages, downloadAnnotatedImage } from '/static/shared.js';
+    import { classifyImages, downloadAnnotatedImage, estimateShelfLife, createBatch } from '/static/shared.js';
 
-    // ── State ────────────────────────────────────────────────────────────────
+    // ── Module 1 vs Module 2 Navigation & State ─────────────────────────────
+    let activeBatch = null;
+
+    const mTabIntake = document.getElementById('m-tab-intake');
+    const mTabScan = document.getElementById('m-tab-scan');
+    const mNavSlider = document.getElementById('m-nav-slider');
+    const mNavTabsContainer = document.getElementById('mobile-nav-tabs');
+    const mViewModule1 = document.getElementById('m-view-module1');
+    const mViewModule2 = document.getElementById('m-view-module2');
+    const mBottomBar = document.getElementById('m-bottom-bar');
+    const mBtnChangeBatch = document.getElementById('m-btn-change-batch');
+
+    function updateMobileNavSlider(tabElement) {
+      if (!mNavSlider || !tabElement || !mNavTabsContainer) return;
+      const tabRect = tabElement.getBoundingClientRect();
+      const containerRect = mNavTabsContainer.getBoundingClientRect();
+      const left = tabRect.left - containerRect.left;
+      const width = tabRect.width;
+      mNavSlider.style.transform = `translateX(${left}px)`;
+      mNavSlider.style.width = `${width}px`;
+    }
+
+    function switchMobileTab(view) {
+      if (view === 'intake') {
+        mTabIntake.classList.add('active');
+        mTabScan.classList.remove('active');
+        updateMobileNavSlider(mTabIntake);
+        mViewModule1.style.display = 'block';
+        mViewModule2.style.display = 'none';
+        mBottomBar.style.display = 'none';
+        stopCamera();
+      } else {
+        mTabScan.classList.add('active');
+        mTabIntake.classList.remove('active');
+        updateMobileNavSlider(mTabScan);
+        mViewModule2.style.display = 'block';
+        mViewModule1.style.display = 'none';
+        mBottomBar.style.display = 'block';
+        if (activeMode === 'camera' && hasCamera) startCamera();
+      }
+    }
+
+    mTabIntake.addEventListener('click', () => switchMobileTab('intake'));
+    mTabScan.addEventListener('click', () => switchMobileTab('scan'));
+    if (mBtnChangeBatch) mBtnChangeBatch.addEventListener('click', () => switchMobileTab('intake'));
+
+    window.addEventListener('resize', () => {
+      const active = document.querySelector('.mobile-nav-tab.active');
+      if (active) updateMobileNavSlider(active);
+    });
+    requestAnimationFrame(() => {
+      const active = document.querySelector('.mobile-nav-tab.active');
+      if (active) updateMobileNavSlider(active);
+    });
+
+    // ── Module 1: Form Elements & Logic ─────────────────────────────────────
+    const mIntakeBatchId = document.getElementById('m-intake-batch-id');
+    const mBtnRegenBatch = document.getElementById('m-btn-regen-batch');
+    const mSpeciesGrid = document.getElementById('m-species-grid');
+    const mPkgGrid = document.getElementById('m-pkg-grid');
+
+    const mPhSlider = document.getElementById('m-ph-slider');
+    const mPhBadge = document.getElementById('m-ph-badge');
+    const mRecTemp = document.getElementById('m-rec-temp');
+    const mSlaughterHrs = document.getElementById('m-slaughter-hrs');
+    const mTransTemp = document.getElementById('m-trans-temp');
+    const mTransDur = document.getElementById('m-trans-dur');
+    const mTransExcursion = document.getElementById('m-trans-excursion');
+    const mWeightVal = document.getElementById('m-weight-val');
+    const mWeightUnit = document.getElementById('m-weight-unit');
+
+    const mPredDays = document.getElementById('m-pred-days');
+    const mPredCi = document.getElementById('m-pred-ci');
+    const mPredRec = document.getElementById('m-pred-rec');
+    const mPredWarnings = document.getElementById('m-pred-warnings');
+    const mDripInitWt = document.getElementById('m-drip-init-wt');
+    const mBtnSaveProceed = document.getElementById('m-btn-save-proceed');
+
+    function generateMobileBatchId() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const rnd = Math.random().toString(16).substring(2, 6).toUpperCase();
+      return `MB-${y}${m}${d}-${rnd}`;
+    }
+
+    mIntakeBatchId.value = generateMobileBatchId();
+    if (mBtnRegenBatch) {
+      mBtnRegenBatch.addEventListener('click', () => {
+        mIntakeBatchId.value = generateMobileBatchId();
+      });
+    }
+
+    // Species
+    mSpeciesGrid.querySelectorAll('.m-pill-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        mSpeciesGrid.querySelectorAll('.m-pill-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        calcMobileShelfLife();
+      });
+    });
+
+    // Packaging
+    mPkgGrid.querySelectorAll('.m-pill-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        mPkgGrid.querySelectorAll('.m-pill-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        calcMobileShelfLife();
+      });
+    });
+
+    // Weight sync
+    function syncMobileWeight() {
+      if (mDripInitWt) {
+        mDripInitWt.textContent = `${mWeightVal.value} ${mWeightUnit.value}`;
+      }
+    }
+    mWeightVal.addEventListener('input', syncMobileWeight);
+    mWeightUnit.addEventListener('change', syncMobileWeight);
+
+    // pH slider
+    mPhSlider.addEventListener('input', () => {
+      const ph = parseFloat(mPhSlider.value);
+      if (ph >= 6.0) {
+        mPhBadge.textContent = `${ph.toFixed(2)} (⚠️ DFD Risk)`;
+        mPhBadge.style.color = 'var(--spoiled)';
+      } else if (ph < 5.4) {
+        mPhBadge.textContent = `${ph.toFixed(2)} (Low pH)`;
+        mPhBadge.style.color = 'var(--review)';
+      } else {
+        mPhBadge.textContent = `${ph.toFixed(2)} (Normal)`;
+        mPhBadge.style.color = 'var(--good)';
+      }
+      debouncedMobileCalc();
+    });
+
+    mRecTemp.addEventListener('input', debouncedMobileCalc);
+    mSlaughterHrs.addEventListener('input', debouncedMobileCalc);
+    mTransTemp.addEventListener('input', debouncedMobileCalc);
+    mTransDur.addEventListener('input', debouncedMobileCalc);
+    mTransExcursion.addEventListener('change', debouncedMobileCalc);
+
+    function getMobileIntakeData() {
+      const spec = mSpeciesGrid.querySelector('.m-pill-opt.selected')?.dataset.value || 'beef';
+      const pkg = mPkgGrid.querySelector('.m-pill-opt.selected')?.dataset.value || 'vacuum';
+
+      const parseNum = (val, def) => {
+        const n = parseFloat(val);
+        return isNaN(n) ? def : n;
+      };
+
+      return {
+        batch_id: mIntakeBatchId.value.trim(),
+        meat_type: spec,
+        initial_ph: parseNum(mPhSlider.value, 5.62),
+        receiving_temp_c: parseNum(mRecTemp.value, 2.0),
+        time_since_slaughter_hrs: parseNum(mSlaughterHrs.value, 24.0),
+        transport_temp_avg_c: parseNum(mTransTemp.value, 2.0),
+        transport_duration_hrs: parseNum(mTransDur.value, 4.0),
+        transport_excursion: mTransExcursion.checked,
+        packaging_type: pkg,
+        initial_weight_val: parseNum(mWeightVal.value, 25.0),
+        initial_weight_unit: mWeightUnit.value || 'kg',
+      };
+    }
+
+    let mCalcTimer = null;
+    function debouncedMobileCalc() {
+      clearTimeout(mCalcTimer);
+      mCalcTimer = setTimeout(calcMobileShelfLife, 250);
+    }
+
+    async function calcMobileShelfLife() {
+      try {
+        const data = getMobileIntakeData();
+        const res = await estimateShelfLife(data);
+
+        mPredDays.textContent = `${res.shelf_life_days} days`;
+        mPredCi.textContent = `[${res.shelf_life_min_days} – ${res.shelf_life_max_days}d, 95% CI]`;
+        mPredRec.innerHTML = `<strong>Storage:</strong> ${res.recommended_conditions}`;
+
+        mPredWarnings.innerHTML = '';
+        if (res.warnings && res.warnings.length) {
+          res.warnings.forEach(w => {
+            const div = document.createElement('div');
+            const isDanger = w.includes('🚨') || w.includes('Breach') || w.includes('Critical');
+            div.className = `m-alert ${isDanger ? 'danger' : 'warning'}`;
+            div.textContent = w;
+            mPredWarnings.appendChild(div);
+          });
+        }
+      } catch (err) {
+        console.warn('Mobile shelf-life err:', err);
+      }
+    }
+
+    // Save batch on mobile
+    mBtnSaveProceed.addEventListener('click', async () => {
+      mBtnSaveProceed.disabled = true;
+      mBtnSaveProceed.textContent = 'Saving Batch...';
+
+      try {
+        const data = getMobileIntakeData();
+        const res = await createBatch(data);
+        activeBatch = res.batch;
+        localStorage.setItem('marbl_active_batch', JSON.stringify(activeBatch));
+
+        // Update banner
+        document.getElementById('m-banner-id').textContent = activeBatch.batch_id;
+        document.getElementById('m-banner-meta').textContent = `${activeBatch.meat_type.toUpperCase()} · ${activeBatch.packaging_type.toUpperCase()}`;
+
+        // Switch to scan
+        switchMobileTab('scan');
+      } catch (err) {
+        alert('Failed to register batch: ' + err.message);
+      } finally {
+        mBtnSaveProceed.disabled = false;
+        mBtnSaveProceed.textContent = 'Save Batch & Start Inspection →';
+      }
+    });
+
+    calcMobileShelfLife();
+
+    // ── Module 2: State ─────────────────────────────────────────────────────
     let selectedFiles = [];
     let activeMode = 'camera';   // 'camera' | 'upload'
     let cameraStream = null;
@@ -872,7 +1780,8 @@
       }
 
       try {
-        const results = await classifyImages(selectedFiles);
+        const batchIdToSend = activeBatch ? activeBatch.batch_id : null;
+        const results = await classifyImages(selectedFiles, batchIdToSend);
         renderResults(results);
       } catch (err) {
         alert(err.message);
@@ -882,6 +1791,70 @@
         scanAgainBtn.style.display = 'flex';
       }
     });
+
+    // ── Module 3: Fat Coverage Panel Builder ─────────────────────────────────
+    function buildFatPanel(r, idx) {
+      if (!r.fat_analysis_available) return '';
+
+      const fat  = r.fat_coverage_pct  ?? 0;
+      const lean = r.lean_coverage_pct ?? 0;
+      const cat  = r.fat_category      ?? 'low';
+      const qual = r.segmentation_quality ?? 0;
+
+      let qualLabel, qualColor;
+      if      (qual >= 0.85) { qualLabel = 'Excellent'; qualColor = '#37E39A'; }
+      else if (qual >= 0.70) { qualLabel = 'Good';      qualColor = '#37E39A'; }
+      else if (qual >= 0.55) { qualLabel = 'Fair';      qualColor = '#FFC93C'; }
+      else                   { qualLabel = 'Low';        qualColor = '#FF5C5C'; }
+
+      const fatBarColor = cat === 'high' ? '#FF781E' : cat === 'moderate' ? '#FFC93C' : '#37E39A';
+
+      const origImg = r.annotated_image_base64;
+      const fatImg  = r.fat_overlay_image_base64;
+      let dualImg = '';
+      if (origImg || fatImg) {
+        const leftImg  = origImg ? `<img src="${origImg}" alt="Original">` :
+          `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px">No image</div>`;
+        const rightImg = fatImg  ? `<img src="${fatImg}"  alt="Segmented">` :
+          `<div style="height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px">No overlay</div>`;
+        dualImg = `
+          <div class="fat-dual-img">
+            <div class="fat-img-wrap">${leftImg}<span class="fat-img-label">Original</span></div>
+            <div class="fat-img-wrap">${rightImg}<span class="fat-img-label">AI Segmented</span></div>
+          </div>`;
+      }
+
+      return `
+        <div class="fat-panel">
+          <div class="fat-bars">
+            <div class="fat-bar-row">
+              <span class="fat-bar-label">Visible Fat</span>
+              <div class="fat-bar-track"><div class="fat-bar-fill" style="width:${fat.toFixed(1)}%;background:${fatBarColor}"></div></div>
+              <span class="fat-bar-pct" style="color:${fatBarColor}">${fat.toFixed(1)}%</span>
+              <span class="fat-category-badge ${cat}">${cat}</span>
+            </div>
+            <div class="fat-bar-row">
+              <span class="fat-bar-label">Lean Meat</span>
+              <div class="fat-bar-track"><div class="fat-bar-fill" style="width:${lean.toFixed(1)}%;background:#37E39A"></div></div>
+              <span class="fat-bar-pct" style="color:#37E39A">${lean.toFixed(1)}%</span>
+            </div>
+          </div>
+          <div class="fat-quality-row">
+            <div class="fat-quality-info">
+              <span class="fat-quality-dot" style="background:${qualColor}"></span>
+              <span>Quality: <strong style="color:${qualColor}">${qualLabel}</strong> (${(qual * 100).toFixed(0)}%)</span>
+            </div>
+            <button class="fat-expand-btn" data-target="fat-expand-m-${idx}">
+              <span class="btn-text">Compare</span>
+              <svg class="chevron" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
+          <div class="fat-collapsible" id="fat-expand-m-${idx}">
+            <div class="fat-disclaimer">⚠ Surface fat coverage only — not intramuscular fat % or nutritional fat content.</div>
+            ${dualImg}
+          </div>
+        </div>`;
+    }
 
     // ── Rendering Results ─────────────────────────────────────────────────────
     function renderResults(results) {
@@ -945,10 +1918,21 @@
           confHtml = `~${r.piece_count_estimate} pcs`;
         }
 
+        const confPct = cardCls === 'good' ? Math.round(r.good_confidence * 100) : Math.round(r.spoiled_confidence * 100);
+
         // Photo Section
         let imgHTML = '';
+        let switcherHTML = '';
         if (r.annotated_image_base64) {
-          imgHTML = `<img src="${r.annotated_image_base64}" alt="Result" />
+          if (r.fat_overlay_image_base64) {
+            switcherHTML = `
+              <div class="photo-switcher" onclick="event.stopPropagation()">
+                <button class="photo-switch-btn active" data-view="orig">Photo</button>
+                <button class="photo-switch-btn" data-view="overlay">Fat Map</button>
+              </div>`;
+          }
+          imgHTML = `<img class="card-main-img" src="${r.annotated_image_base64}" alt="Result" />
+                   ${switcherHTML}
                    <button class="share download-btn" data-b64="${r.annotated_image_base64}" data-filename="${r.filename}">
                      <svg viewBox="0 0 24 24"><path d="M12 16V4M12 4L7 9M12 4l5 5M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg>
                    </button>`;
@@ -963,6 +1947,15 @@
           }
         }
 
+        let discardHtml = '';
+        if (r.decision === 'discard') {
+          discardHtml = `
+            <div class="discard-info">
+              <span class="discard-dot"></span>
+              <span>Rejected · ${confPct}% spoiled confidence</span>
+            </div>`;
+        }
+
         card.innerHTML = `
         <div class="photo ${cardCls}">
           ${imgHTML}
@@ -971,9 +1964,54 @@
           <div class="route">${routeHtml}</div>
           <div class="conf">${confHtml}</div>
         </div>
+        ${discardHtml}
+        ${buildFatPanel(r, i)}
       `;
 
+        // Wire Photo / Fat Map switcher
+        const switcherBtns = card.querySelectorAll('.photo-switch-btn');
+        const mainImg = card.querySelector('.card-main-img');
+        if (switcherBtns.length && mainImg) {
+          switcherBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              switcherBtns.forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              if (btn.dataset.view === 'overlay') {
+                mainImg.src = r.fat_overlay_image_base64;
+              } else {
+                mainImg.src = r.annotated_image_base64;
+              }
+            });
+          });
+        }
+
+        // Wire expandable fat panel
+        const expandBtn = card.querySelector('.fat-expand-btn');
+        if (expandBtn) {
+          const target = card.querySelector('#' + expandBtn.dataset.target);
+          expandBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = target.style.display === 'block';
+            target.style.display = isOpen ? 'none' : 'block';
+            expandBtn.classList.toggle('open', !isOpen);
+            expandBtn.querySelector('.btn-text').textContent = isOpen ? 'Compare' : 'Close';
+          });
+        }
+
         // Wire download button
+        const dlBtn = card.querySelector('.download-btn');
+        if (dlBtn) {
+          dlBtn.addEventListener('click', () => {
+            downloadAnnotatedImage(dlBtn.dataset.b64, dlBtn.dataset.filename);
+          });
+        }
+
+        resultsFeed.appendChild(card);
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
         const dlBtn = card.querySelector('.download-btn');
         if (dlBtn) {
           dlBtn.addEventListener('click', () => {
