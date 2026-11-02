@@ -1,9 +1,13 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+python-multipart>=0.0.9
 torch>=2.2.0
 torchvision>=0.17.0
-opencv-python>=4.9.0
+opencv-python-headless>=4.9.0
 numpy>=1.26.0
 pyyaml>=6.0
+Pillow>=10.0.0
 
-# Module 3 — Fat Segmenter training dependencies
+# Module 3 — Visible Fat Coverage Analysis & Segmentation
 segmentation-models-pytorch>=0.3.3
 albumentations>=1.3.0

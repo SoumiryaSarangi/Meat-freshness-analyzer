@@ -37,7 +37,7 @@ fat_analyser:
 
   weights: "../models/fat_segmenter.pt"   # relative to backend/
   input_size: 256                          # U-Net input resolution (px)
-  device: "cuda"                           # "cuda" if GPU available, else "cpu"
+  device: "cpu"                            # "cpu" for cloud/Render; auto-uses GPU if CUDA present
 
   # Fat-coverage category thresholds (percentage of total meat surface)
   fat_thresholds:

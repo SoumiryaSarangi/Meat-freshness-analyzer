@@ -13,9 +13,11 @@ output/
 archive*
 *.zip
 
-# Ignore all models except the best trained freshness classifier
+# Ignore untrained/temporary models except production weights
 models/*
 !models/freshness_classifier.pt
+!models/fat_segmenter.pt
+!models/fat_segmenter_final.pt
 !models/.gitkeep
 
 # Scratch / debug
