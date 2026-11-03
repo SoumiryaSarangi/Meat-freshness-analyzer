@@ -147,6 +147,7 @@ The FastAPI backend exposes asynchronous endpoints for production integration:
 
 Detailed engineering whitepapers, mathematical derivations, and laboratory validation protocols are organized within the [`docs/`](docs/) directory:
 
+- [**Master Complete System Documentation**](docs/COMPLETE_SYSTEM_DOCUMENTATION.md) — Single comprehensive master report answering all 14 project components (architecture, workflow, screenshots, MobileNetV2 training, evaluation, metrology, validation, kinetics, fat analysis, biosensors, timeline, literature).
 - [**System Architecture & End-to-End Workflow**](docs/SYSTEM_WORKFLOW_AND_ARCHITECTURE.md) — Comprehensive multi-tier architecture diagram, data flow, and routing state machine.
 - [**Current vs. Proposed Modules Matrix**](docs/CURRENT_VS_PROPOSED_MODULES.md) — Detailed operational status table across all pipeline subsystems.
 - [**Model Training & Evaluation Report**](docs/MODEL_TRAINING_AND_EVALUATION.md) — MobileNetV2 training parameters, augmentations, 94.2% validation score, confusion matrix, and latency benchmarks.

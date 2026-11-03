@@ -8,6 +8,7 @@ Welcome to the comprehensive technical documentation repository for **Marbl**, t
 
 | Document | Focus Area | Description |
 |---|---|---|
+| [**Master Complete System Documentation**](COMPLETE_SYSTEM_DOCUMENTATION.md) | **All-in-One Master Report** | **Single master document answering all 14 project components: workflow, actual screenshots, MobileNetV2 methodology, evaluation, metrology, kinetics, fat analysis, biosensors, validation, timeline, and literature review** |
 | [**System Architecture & End-to-End Workflow**](SYSTEM_WORKFLOW_AND_ARCHITECTURE.md) | System Design & Flow | Decoupled client/API/vision/storage architecture diagram and complete lifecycle workflow with explicit rejection branch |
 | [**Current vs. Proposed Modules Matrix**](CURRENT_VS_PROPOSED_MODULES.md) | Operational Matrix | Comprehensive status comparison between active production components and staged/future features |
 | [**Model Training & Evaluation Report**](MODEL_TRAINING_AND_EVALUATION.md) | AI & Deep Learning | MobileNetV2 architecture, augmentations, 75/25 split, hyperparameters, 94.2% accuracy, confusion matrix, and latency benchmarks |
