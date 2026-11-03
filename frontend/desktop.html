@@ -287,38 +287,224 @@
       animation: fadeIn 0.2s ease;
     }
 
-    .drop {
-      border: 1.5px dashed var(--line);
-      border-radius: 12px;
-      padding: 44px 20px;
+    /* ─── INDUSTRIAL VIEWFINDER DROPZONE ─── */
+    .viewfinder-wrap {
+      position: relative;
+      background: rgba(24, 27, 29, 0.85);
+      border: 1px solid rgba(133, 141, 145, 0.25);
+      border-radius: 16px;
+      padding: 38px 24px 34px;
       text-align: center;
-      transition: border-color .15s;
       cursor: pointer;
+      overflow: hidden;
+      transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-sizing: border-box;
     }
 
-    .drop.drag-over,
-    .drop:hover {
-      border-color: var(--accent);
-      background: rgba(214, 255, 63, 0.04);
+    .viewfinder-wrap.drag-over,
+    .viewfinder-wrap:hover {
+      background: rgba(223, 255, 79, 0.04);
+      border-color: #DFFF4F;
+      box-shadow: 0 0 24px rgba(223, 255, 79, 0.14);
     }
 
-    .drop .emoji {
-      font-size: 30px;
-      margin-bottom: 10px;
+    .viewfinder-bracket {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      pointer-events: none;
+    }
+    .bracket-tl {
+      top: 14px;
+      left: 14px;
+      border-top: 2.2px solid #DFFF4F;
+      border-left: 2.2px solid #DFFF4F;
+    }
+    .bracket-tr {
+      top: 14px;
+      right: 14px;
+      border-top: 2.2px solid #DFFF4F;
+      border-right: 2.2px solid #DFFF4F;
+    }
+    .bracket-bl {
+      bottom: 14px;
+      left: 14px;
+      border-bottom: 2.2px solid #DFFF4F;
+      border-left: 2.2px solid #DFFF4F;
+    }
+    .bracket-br {
+      bottom: 14px;
+      right: 14px;
+      border-bottom: 2.2px solid #DFFF4F;
+      border-right: 2.2px solid #DFFF4F;
     }
 
-    .drop h3 {
-      font-family: 'Space Grotesk', sans-serif;
-      font-size: 16px;
-      margin: 0 0 6px;
+    .viewfinder-crosshair {
+      width: 28px;
+      height: 28px;
+      position: relative;
+      opacity: 0.5;
+      margin-bottom: 2px;
+    }
+    .viewfinder-crosshair::before, .viewfinder-crosshair::after {
+      content: '';
+      position: absolute;
+      background: #858D91;
+    }
+    .viewfinder-crosshair::before {
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1.5px;
+      transform: translateY(-50%);
+    }
+    .viewfinder-crosshair::after {
+      left: 50%;
+      top: 0;
+      bottom: 0;
+      width: 1.5px;
+      transform: translateX(-50%);
+    }
+
+    .viewfinder-caption {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #858D91;
+      font-weight: 600;
+    }
+
+    .viewfinder-title {
+      font-family: 'Space Grotesk', -apple-system, sans-serif;
       font-weight: 700;
+      font-size: 18px;
+      color: #F4F5EF;
+      letter-spacing: -0.01em;
     }
 
-    .drop p {
-      color: var(--muted);
+    .viewfinder-sub {
       font-size: 13px;
-      margin: 0;
+      color: #858D91;
+    }
+
+    .viewfinder-paste {
+      font-size: 11.5px;
+      color: rgba(133, 141, 145, 0.7);
+      margin-top: 2px;
+    }
+    .viewfinder-paste kbd {
+      background: #22262A;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #F4F5EF;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    /* ─── CALIBRATION REFERENCE CARD (SIZE MEASUREMENT) ─── */
+    .calibration-box {
+      margin-top: 14px;
+      background: var(--surface, #181B1D);
+      border: 1px solid var(--line, rgba(255, 255, 255, 0.08));
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .calibration-box:hover {
+      border-color: rgba(223, 255, 79, 0.35);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+    .calibration-box summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 16px;
+      color: var(--ink, #F4F5EF);
+      cursor: pointer;
+      font-family: 'Space Grotesk', -apple-system, sans-serif;
+      font-size: 12.5px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      list-style: none;
+      user-select: none;
+      background: rgba(255, 255, 255, 0.015);
+    }
+    .calibration-box summary::-webkit-details-marker {
+      display: none;
+    }
+    .calib-toggle-hint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: rgba(223, 255, 79, 0.08);
+      border: 1px solid rgba(223, 255, 79, 0.25);
+      color: #DFFF4F;
+      letter-spacing: 0.04em;
+    }
+    .calibration-box .content {
+      padding: 14px 16px;
+      background: rgba(0, 0, 0, 0.15);
+      border-top: 1px solid var(--line, rgba(255, 255, 255, 0.06));
+      font-size: 12px;
+      color: var(--muted, #858D91);
       line-height: 1.5;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .calib-card-preview {
+      display: flex;
+      justify-content: center;
+      padding-top: 2px;
+    }
+    .calib-card-mock {
+      width: 100%;
+      max-width: 290px;
+      height: 64px;
+      border: 1.5px dashed rgba(223, 255, 79, 0.45);
+      border-radius: 8px;
+      background: rgba(223, 255, 79, 0.03);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 3px;
+      position: relative;
+    }
+    .calib-chip {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 14px;
+      border-radius: 3px;
+      background: rgba(255, 201, 60, 0.25);
+      border: 1px solid rgba(255, 201, 60, 0.45);
+    }
+    .calib-card-dims {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #F4F5EF;
+      letter-spacing: 0.04em;
+    }
+    .calib-card-standard {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      font-weight: 500;
+      color: rgba(133, 141, 145, 0.8);
+      letter-spacing: 0.08em;
     }
 
     .drop .paste {
@@ -1770,11 +1956,19 @@
       <div class="layout" style="padding-top:6px">
         <div class="sidebar-col">
           <div class="panel">
-            <div class="drop" id="drop-zone">
-              <div class="emoji">🥩</div>
-              <h3>Drop photos here</h3>
-              <p>or click to browse · JPEG, PNG</p>
-              <div class="paste">or paste from clipboard — <kbd>Ctrl</kbd>+<kbd>V</kbd></div>
+            <!-- Drop / Tap Viewfinder Zone -->
+            <div class="viewfinder-wrap" id="drop-zone" tabindex="0" role="button" aria-label="Drop sample images or click to select files">
+              <div class="viewfinder-bracket bracket-tl" aria-hidden="true"></div>
+              <div class="viewfinder-bracket bracket-tr" aria-hidden="true"></div>
+              <div class="viewfinder-bracket bracket-bl" aria-hidden="true"></div>
+              <div class="viewfinder-bracket bracket-br" aria-hidden="true"></div>
+
+              <div class="viewfinder-crosshair" aria-hidden="true"></div>
+
+              <div class="viewfinder-caption">ALIGN SAMPLE + REFERENCE CARD IN FRAME</div>
+              <div class="viewfinder-title">Drop photos or tap to browse</div>
+              <div class="viewfinder-sub">JPEG, PNG · Multi-file supported</div>
+              <div class="viewfinder-paste">or paste from clipboard — <kbd>Ctrl</kbd>+<kbd>V</kbd></div>
               <input type="file" id="file-input" accept="image/*" multiple style="display:none">
             </div>
 
@@ -1846,6 +2040,32 @@
             </button>
             <div id="sensor-handshake-log" class="sensor-handshake-log"></div>
           </div>
+
+          <!-- ── CALIBRATION REFERENCE CARD (SIZE MEASUREMENT) ── -->
+          <details class="calibration-box" open>
+            <summary>
+              <span style="display:flex;align-items:center;gap:8px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#DFFF4F" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"/>
+                  <line x1="2" y1="10" x2="22" y2="10"/>
+                </svg>
+                Reference Card & Calibration (Size Measurement)
+              </span>
+              <span class="calib-toggle-hint">ID-1 · 85.6mm</span>
+            </summary>
+            <div class="content">
+              <div class="calib-desc">
+                Place a standard ID or credit card (85.60 × 53.98 mm) flat beside the meat sample. The computer vision engine detects card contours to calibrate true physical millimeter dimensions. Without a card, size is estimated from relative image area.
+              </div>
+              <div class="calib-card-preview">
+                <div class="calib-card-mock">
+                  <div class="calib-chip"></div>
+                  <div class="calib-card-dims">85.60 mm × 53.98 mm</div>
+                  <div class="calib-card-standard">ISO/IEC 7810 ID-1 CALIBRATION TARGET</div>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="results">
