@@ -1049,28 +1049,47 @@
       gap: 6px;
     }
 
+    .m-form-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 10px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
     .m-form-group {
       display: flex;
       flex-direction: column;
       gap: 5px;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .m-form-group label {
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--muted);
       display: flex;
       justify-content: space-between;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .m-input {
       background: var(--surface-2);
       border: 1px solid var(--line);
       border-radius: 10px;
-      padding: 10px 12px;
+      padding: 10px 10px;
       color: var(--ink);
       font-size: 14px;
       font-family: inherit;
       outline: none;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      transition: border-color 0.15s ease;
     }
 
     .m-input:focus {
@@ -1312,24 +1331,24 @@
             <input type="range" id="m-ph-slider" min="4.8" max="7.0" step="0.05" value="5.62" style="accent-color:var(--accent)">
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="m-form-row">
             <div class="m-form-group">
-              <label>Receiving Temp (°C)</label>
+              <label title="Receiving Temp (°C)">Receiving Temp (°C)</label>
               <input type="number" id="m-rec-temp" class="m-input" step="0.1" value="1.8">
             </div>
             <div class="m-form-group">
-              <label>Slaughter (hrs ago)</label>
+              <label title="Slaughter (hrs ago)">Slaughter (hrs ago)</label>
               <input type="number" id="m-slaughter-hrs" class="m-input" step="1" value="24">
             </div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="m-form-row">
             <div class="m-form-group">
-              <label>Transit Temp (°C)</label>
+              <label title="Transit Temp (°C)">Transit Temp (°C)</label>
               <input type="number" id="m-trans-temp" class="m-input" step="0.1" value="2.0">
             </div>
             <div class="m-form-group">
-              <label>Transit Time (hrs)</label>
+              <label title="Transit Time (hrs)">Transit Time (hrs)</label>
               <input type="number" id="m-trans-dur" class="m-input" step="0.5" value="4.0">
             </div>
           </div>
@@ -1561,6 +1580,7 @@
         mViewModule1.style.display = 'block';
         mViewModule2.style.display = 'none';
         mBottomBar.style.display = 'none';
+        if (inputToggle) inputToggle.style.display = 'none';
         stopCamera();
       } else {
         mTabScan.classList.add('active');
@@ -1569,6 +1589,7 @@
         mViewModule2.style.display = 'block';
         mViewModule1.style.display = 'none';
         mBottomBar.style.display = 'block';
+        if (inputToggle && hasCamera) inputToggle.style.display = 'flex';
         if (activeMode === 'camera' && hasCamera) startCamera();
       }
     }
@@ -1786,10 +1807,12 @@
     // ── Feature-detect camera ────────────────────────────────────────────────
     const hasCamera = !!navigator.mediaDevices?.getUserMedia;
 
+    // inputToggle is hidden on the initial Intake tab; it appears in the header only when on Visual Scan
+    if (inputToggle) inputToggle.style.display = 'none';
+
     if (hasCamera) {
       inputToggle.classList.add('visible');
       galleryLink.style.display = 'block';
-      // startCamera() is invoked when user navigates to the visual scan view
     } else {
       cameraPanel.style.display = 'none';
       dropZone.classList.add('active-mode');
