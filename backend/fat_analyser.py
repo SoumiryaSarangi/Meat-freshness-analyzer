@@ -483,7 +483,7 @@ class FatAnalyser:
             rgb = (rgb - _IMAGENET_MEAN) / _IMAGENET_STD
             tensor = torch.from_numpy(rgb.transpose(2, 0, 1)).unsqueeze(0).float().to(self.device)
 
-            with torch.no_grad():
+            with torch.inference_mode():
                 logits = self.model(tensor)
                 probs = F.softmax(logits, dim=1).squeeze(0).cpu().numpy()
 
@@ -538,7 +538,7 @@ class FatAnalyser:
         tensor = torch.from_numpy(rgb.transpose(2, 0, 1)).unsqueeze(0).float().to(self.device)
 
         # ── 2. Inference ──────────────────────────────────────────────────
-        with torch.no_grad():
+        with torch.inference_mode():
             logits   = self.model(tensor)                     # (1, 3, H_in, W_in)
             probs    = F.softmax(logits, dim=1).squeeze(0)   # (3, H_in, W_in)
             probs_np = probs.cpu().numpy()                    # (3, H_in, W_in)
@@ -649,12 +649,13 @@ class FatAnalyser:
             # Clip to valid range and convert
             overlay_rgb = np.clip(rgb, 0, 255).astype(np.uint8)
 
-            from PIL import Image as PILImage
-            pil_img = PILImage.fromarray(overlay_rgb)
-            buf = io.BytesIO()
-            pil_img.save(buf, format="JPEG", quality=82, optimize=True)
-            b64 = base64.b64encode(buf.getvalue()).decode("ascii")
-            return f"data:image/jpeg;base64,{b64}"
+            # Fast OpenCV JPEG encode (avoids Pillow conversion overhead)
+            overlay_bgr = cv2.cvtColor(overlay_rgb, cv2.COLOR_RGB2BGR)
+            ok, enc = cv2.imencode('.jpg', overlay_bgr, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            if ok:
+                b64 = base64.b64encode(enc.tobytes()).decode("ascii")
+                return f"data:image/jpeg;base64,{b64}"
+            return None
 
         except Exception:
             return None

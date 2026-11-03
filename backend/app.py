@@ -13,7 +13,9 @@ Then open http://localhost:8000 in a browser, or from a phone on the same
 network: http://<your-machine-ip>:8000
 """
 
+import asyncio
 import base64
+import concurrent.futures
 import io
 import os
 from pathlib import Path
@@ -65,9 +67,8 @@ def decode_upload_bytes(contents: bytes) -> np.ndarray | None:
         pil_img = ImageOps.exif_transpose(pil_img)  # no-op if no EXIF orientation tag
         pil_img = pil_img.convert("RGB")
         
-        # Resize huge gallery photos to speed up GrabCut (~20s -> ~0.2s)
-        # Size measurement is scale-invariant (relative to card or image area)
-        MAX_DIM = 1280
+        # Resize huge photos to 800px max (optimal balance for 224px CNN / 256px U-Net & fast web cards)
+        MAX_DIM = 800
         w, h = pil_img.size
         if max(w, h) > MAX_DIM:
             scale = MAX_DIM / max(w, h)
@@ -81,10 +82,10 @@ def decode_upload_bytes(contents: bytes) -> np.ndarray | None:
         img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
         if img is not None:
             h, w = img.shape[:2]
-            MAX_DIM = 1280
+            MAX_DIM = 800
             if max(w, h) > MAX_DIM:
                 scale = MAX_DIM / max(w, h)
-                img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_LINEAR)
+                img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
         return img
 
 # ---------------------------------------------------------------------------
@@ -330,56 +331,67 @@ async def classify(
         raise HTTPException(status_code=400, detail="No files uploaded.")
 
     cfg = app.state.cfg
-    results = []
 
+    # Read uploaded file bytes concurrently
+    upload_payloads = []
     for upload in files:
         raw = await upload.read()
-        image = decode_upload_bytes(raw)
+        upload_payloads.append((upload.filename or "upload", raw))
 
-        if image is None:
-            results.append({
-                "filename": upload.filename,
+    def _process_single_image(item):
+        fname, raw_bytes = item
+        img = decode_upload_bytes(raw_bytes)
+        if img is None:
+            return {
+                "filename": fname,
                 "error": "Could not decode image. Please upload a valid JPEG/PNG.",
-            })
-            continue
+            }
 
         try:
-            result = process_image(
-                image_bgr=image,
-                filename=upload.filename or "upload",
+            res = process_image(
+                image_bgr=img,
+                filename=fname,
                 classifier=_classifier,
                 cfg=cfg,
                 fat_analyser=_fat_analyser,
             )
         except Exception as exc:
-            results.append({
-                "filename": upload.filename,
+            return {
+                "filename": fname,
                 "error": f"Processing error: {exc}",
-            })
-            continue
+            }
 
-        # Link batch_id if provided
-        if batch_id:
-            result["batch_id"] = batch_id
-            try:
-                db.add_inspection_record(batch_id, result)
-            except Exception as db_exc:
-                print(f"[app] Warning: failed to save record to DB: {db_exc}")
-
-        # ── Annotate: draw results onto a resized copy of the image ──
+        # Annotate
         try:
-            ann_bytes = annotate_image(image, result)
+            ann_bytes = annotate_image(img, res)
             if ann_bytes is not None:
-                result["annotated_image_base64"] = (
+                res["annotated_image_base64"] = (
                     "data:image/jpeg;base64,"
                     + base64.b64encode(ann_bytes).decode("ascii")
                 )
             else:
-                result["annotated_image_base64"] = None
+                res["annotated_image_base64"] = None
         except Exception:
-            result["annotated_image_base64"] = None
+            res["annotated_image_base64"] = None
 
-        results.append(result)
+        return res
+
+    # Run image batch concurrently across thread pool
+    loop = asyncio.get_running_loop()
+    workers = min(4, len(upload_payloads) or 1)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
+        futures = [loop.run_in_executor(executor, _process_single_image, item) for item in upload_payloads]
+        results = await asyncio.gather(*futures)
+
+    # Archive to SQLite in sequential order if batch_id was provided
+    if batch_id:
+        for r in results:
+            if not r.get("error"):
+                r["batch_id"] = batch_id
+                try:
+                    db.add_inspection_record(batch_id, r)
+                except Exception as db_exc:
+                    print(f"[app] Warning: failed to save record to DB: {db_exc}")
 
     return JSONResponse(content={"results": results, "batch_id": batch_id})
 

@@ -264,8 +264,7 @@ def annotate_image(image_bgr: np.ndarray, result: dict) -> bytes | None:
 
         # ── 9.  Encode to JPEG ─────────────────────────────────────────────
         buf = io.BytesIO()
-        pil_img.save(buf, format="JPEG", quality=_JPEG_QUALITY,
-                     optimize=True, progressive=True)
+        pil_img.save(buf, format="JPEG", quality=_JPEG_QUALITY)
         return buf.getvalue()
 
     except Exception:
