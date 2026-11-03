@@ -1465,7 +1465,7 @@
         <div class="spinner" id="spinner"></div>
 
         <!-- Mobile Biogenic Amine Sensor Card -->
-        <div class="m-sensor-card">
+        <div class="m-sensor-card" id="m-sensor-card">
           <div class="m-sensor-head">
             <div class="m-sensor-title">
               <span>⚡</span> Biogenic Amine Sensor
@@ -1870,6 +1870,8 @@
         inputToggle.style.display = 'flex';
         cameraPanel.style.display = 'none';
         dropZone.style.display = 'flex';
+        const mSensorCard = document.getElementById('m-sensor-card');
+        if (mSensorCard) mSensorCard.style.display = 'block';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
       switchMode('upload');
@@ -1991,6 +1993,8 @@
       scanAgainBtn.style.display = 'none';
       checkBtn.style.display = 'none';
       inputToggle.style.display = 'flex';
+      const mSensorCard = document.getElementById('m-sensor-card');
+      if (mSensorCard) mSensorCard.style.display = 'block';
       if (activeMode === 'camera') {
         cameraPanel.style.display = 'flex';
         galleryLink.style.display = 'block';
@@ -2007,12 +2011,13 @@
       checkBtn.disabled = true;
       spinner.style.display = 'block';
 
-      // Hide inputs during processing
+      // Hide inputs and sensor hardware card during processing & results
       cameraPanel.style.display = 'none';
       dropZone.style.display = 'none';
       previewStrip.style.display = 'none';
-      // inputToggle stays visible
       galleryLink.style.display = 'none';
+      const mSensorCard = document.getElementById('m-sensor-card');
+      if (mSensorCard) mSensorCard.style.display = 'none';
 
       // Show loading skeletons
       resultsFeed.innerHTML = '';

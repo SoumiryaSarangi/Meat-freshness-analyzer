@@ -139,9 +139,71 @@ export async function estimateShelfLife(intakeData) {
   return calculateLocalShelfLife(intakeData);
 }
 
+/**
+ * Pre-scale large gallery/phone camera photos (e.g. 12MP, 8MB) to max 1280px in browser canvas.
+ * This reduces upload payload from 10MB to ~250KB (40x faster upload on mobile network),
+ * while preserving the exact 1280px max dimension used by backend models.
+ */
+async function optimizeImageForUpload(file) {
+  if (!file || !file.type || !file.type.startsWith('image/')) return file;
+
+  return new Promise((resolve) => {
+    // If running in environment without Image or Canvas, return original file
+    if (typeof Image === 'undefined' || typeof document === 'undefined') {
+      return resolve(file);
+    }
+
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const MAX_DIM = 1280;
+      const w = img.naturalWidth || img.width;
+      const h = img.naturalHeight || img.height;
+
+      // If already within 1280px and small in size, send original file as-is
+      if (Math.max(w, h) <= MAX_DIM && file.size < 750 * 1024) {
+        return resolve(file);
+      }
+
+      let scale = 1;
+      if (Math.max(w, h) > MAX_DIM) {
+        scale = MAX_DIM / Math.max(w, h);
+      }
+      const targetW = Math.round(w * scale);
+      const targetH = Math.round(h * scale);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+
+      canvas.toBlob((blob) => {
+        if (!blob || blob.size >= file.size) {
+          return resolve(file);
+        }
+        const optName = file.name.replace(/\.[^.]+$/, '.jpg');
+        const optimizedFile = new File([blob], optName, {
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        });
+        resolve(optimizedFile);
+      }, 'image/jpeg', 0.90);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
+}
+
 export async function classifyImages(files, batchId = null) {
   const formData = new FormData();
-  files.forEach(f => formData.append('files', f));
+  // Optimize large images in parallel before sending
+  const processedFiles = await Promise.all(files.map(f => optimizeImageForUpload(f)));
+  processedFiles.forEach(f => formData.append('files', f));
   if (batchId) {
     formData.append('batch_id', batchId);
   }
