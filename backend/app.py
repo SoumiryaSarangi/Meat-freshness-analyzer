@@ -67,8 +67,9 @@ def decode_upload_bytes(contents: bytes) -> np.ndarray | None:
         pil_img = ImageOps.exif_transpose(pil_img)  # no-op if no EXIF orientation tag
         pil_img = pil_img.convert("RGB")
         
-        # Resize huge photos to 800px max (optimal balance for 224px CNN / 256px U-Net & fast web cards)
-        MAX_DIM = 800
+        # Resize huge gallery photos to speed up GrabCut (~20s -> ~0.2s)
+        # Size measurement is scale-invariant (relative to card or image area)
+        MAX_DIM = 1280
         w, h = pil_img.size
         if max(w, h) > MAX_DIM:
             scale = MAX_DIM / max(w, h)
@@ -82,7 +83,7 @@ def decode_upload_bytes(contents: bytes) -> np.ndarray | None:
         img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
         if img is not None:
             h, w = img.shape[:2]
-            MAX_DIM = 800
+            MAX_DIM = 1280
             if max(w, h) > MAX_DIM:
                 scale = MAX_DIM / max(w, h)
                 img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
