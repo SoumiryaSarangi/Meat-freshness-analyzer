@@ -201,6 +201,15 @@ async def index(request: Request):
     return FileResponse(str(file_path), media_type="text/html")
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    """Serve the application favicon."""
+    favicon_path = FRONTEND_DIR / "favicon.ico"
+    if favicon_path.exists():
+        return FileResponse(str(favicon_path), media_type="image/x-icon")
+    raise HTTPException(status_code=404, detail="favicon not found")
+
+
 # ---------------------------------------------------------------------------
 # Module 1: Batch Registration & Shelf-Life API
 # ---------------------------------------------------------------------------

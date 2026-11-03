@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#191C1B"/>
+      <stop offset="100%" stop-color="#0A0B0A"/>
+    </linearGradient>
+    <linearGradient id="meat" x1="16" y1="14" x2="48" y2="50" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FF5C5C"/>
+      <stop offset="100%" stop-color="#D92D20"/>
+    </linearGradient>
+    <linearGradient id="fatcap" x1="16" y1="14" x2="48" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#FFF2D6"/>
+      <stop offset="100%" stop-color="#FCE7C8"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Container badge -->
+  <rect width="64" height="64" rx="16" fill="url(#bg)"/>
+  <rect x="1" y="1" width="62" height="62" rx="15" fill="none" stroke="#2A2D2A" stroke-width="1.5"/>
+
+  <!-- Meat cut silhouette -->
+  <path d="M22 17 C14 20, 10 30, 13 40 C15 47, 23 52, 34 50 C44 48, 52 42, 53 32 C54 22, 45 15, 33 15 C28 15, 25 16, 22 17 Z" fill="url(#meat)"/>
+
+  <!-- Outer fat cap curve -->
+  <path d="M33 15 C45 15, 54 22, 53 32 C53 35, 50 40, 46 44 C49 37, 50 28, 43 20 C38 16, 32 16, 26 17 C28 16, 30 15, 33 15 Z" fill="url(#fatcap)" opacity="0.95"/>
+
+  <!-- Intramuscular marbling streaks -->
+  <path d="M22 28 C27 27, 33 30, 36 34" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.9"/>
+  <path d="M25 38 C30 39, 36 43, 40 43" stroke="#FFFFFF" stroke-width="2.0" stroke-linecap="round" fill="none" opacity="0.85"/>
+  <path d="M18 34 C20 33, 23 35, 24 37" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" fill="none" opacity="0.8"/>
+  <path d="M34 24 C37 25, 40 27, 43 28" stroke="#FFF2D6" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.85"/>
+
+  <!-- Signature Marbl lemon bone accent (#D6FF3F) -->
+  <circle cx="25" cy="26" r="4.5" fill="#0A0B0A" stroke="#D6FF3F" stroke-width="2.2"/>
+  <circle cx="25" cy="26" r="1.6" fill="#D6FF3F"/>
+</svg>
