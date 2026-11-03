@@ -151,3 +151,4 @@ Latency was benchmarked across standard hardware configurations running real-wor
 | Annotation Overlay & Base64 Encode | 16.0 ms | 15.6 ms |
 | **Total Per-Image Latency** | **384.0 ms** | **332.0 ms** |
 | **Concurrent Throughput (4 images)** | **~0.95 s / batch** | **~0.40 s / image** |
+

@@ -103,3 +103,4 @@ Marbl fuses optical computer vision predictions with biosensor telemetry to elim
 | **GOOD** | $> 40\text{ mg/kg}$ (Elevated) | **HOLD & AUDIT (Secondary Test)** | **Safety Interlock**: Early anaerobic spoilage detected before surface discoloration. Product held for laboratory confirmation. |
 | **SPOILED** | Any value | **REJECT (Discard)** | Optical discoloration indicates spoilage; product discarded regardless of sensor value. |
 | **SPOILED** | $> 40\text{ mg/kg}$ (Elevated) | **REJECT (Discard)** | Conclusive double-positive spoilage confirmation. |
+

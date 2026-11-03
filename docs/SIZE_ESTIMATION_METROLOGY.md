@@ -88,3 +88,4 @@ Images were captured under standard overhead LED plant illumination (3500K) at w
 | **120mm Threshold Routing Accuracy** | $\frac{N_{\text{correct routing}}}{N_{\text{total}}}$ | **98.0% (49/50)**| $\ge 95\%$ | Passed |
 
 The single routing discrepancy occurred on Sample #03 (114.2 mm true length measured at 116.1 mm, which was near the 120 mm threshold but still routed safely to grinding).
+

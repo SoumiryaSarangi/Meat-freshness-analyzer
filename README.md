@@ -42,28 +42,6 @@ For every inspected cut or batch, Marbl provides:
 
 ---
 
-## User Interface
-
-The system incorporates an industrial dark-mode design system (`#111315` obsidian, `#181B1D` slate, `#DFFF4F` lemon accent, and `#FF5A4F` signal red) engineered for high contrast on loading dock terminals and plant floor tablets:
-
-### Desktop QA Console & Intake (Module 1)
-![Desktop Intake Interface](docs/images/ui_desktop_intake.png)
-*Figure 1: Module 1 desktop intake screen displaying batch provenance key, species pills, continuous post-mortem pH slider with biological defect flagging (PSE/Normal/DFD), cold-chain transit logging, and real-time shelf-life calculation with 95% confidence bounds.*
-
-### Industrial Viewfinder Dropzone (Module 2)
-![Industrial Viewfinder Dropzone](docs/images/ui_viewfinder_dropzone.jpg)
-*Figure 2: The industrial image acquisition dropzone featuring optical corner reticles, center crosshairs, and ISO ID-1 reference card alignment guide.*
-
-### Visual Scan Classification & Multi-Cut Routing
-![Classification Results](docs/images/ui_classification_results.jpg)
-*Figure 3: Inspection results across three representative cuts. Left: Single primal cut classified as GOOD (72%) with 31.2% moderate fat routed to packing (~126mm). Center: Multi-piece beef cuts correctly routed to `multi-piece → grinding` (75% Good, 1.2% fat, 8 detected pieces). Right: Spoiled steak cut cleanly isolated with a 99% spoiled confidence score and signal red DISCARD border.*
-
-### Mobile Terminal View
-![Mobile Interface](docs/images/ui_mobile_view.png)
-*Figure 4: Touch-optimized interface for handheld Android/iOS scanning terminals operating in receiving bays and cold storage.*
-
----
-
 ## System Workflow & Decision Logic
 
 Marbl implements a deterministic, safety-first routing matrix:
@@ -124,6 +102,7 @@ source venv/bin/activate
 # 3. Install backend dependencies
 cd backend
 pip install -r requirements.txt
+cd ..
 ```
 
 > **GPU Acceleration:** To enable CUDA tensor acceleration on NVIDIA systems:
@@ -134,13 +113,20 @@ pip install -r requirements.txt
 
 ### Launch the Server
 
+Launch the complete application server from the root directory using the automated launcher script:
+
 ```bash
-cd backend
-uvicorn app:app --host 0.0.0.0 --port 8000
+# Direct launcher via Python
+python start_server.py
+
+# Or on Windows via batch script
+start.bat
 ```
 
-- Open **http://localhost:8000** in your web browser.
-- Open on mobile terminals connected to the same local network: `http://<YOUR-PC-IP>:8000/mobile.html`
+The launcher automatically adds `backend/` to `sys.path`, resolves dependencies, and binds cleanly to **http://localhost:8000** with auto-reload enabled.
+
+- **Desktop QA Console:** `http://localhost:8000` (or `http://localhost:8000/desktop.html`)
+- **Mobile Terminal:** `http://localhost:8000/mobile.html`
 
 ---
 
@@ -196,6 +182,9 @@ The web application supports both **direct camera capture** and **file browser u
 
 ```text
 marbl/
+├── start_server.py                   # Automated server launcher (adds paths & starts server)
+├── start.bat                         # Windows one-click launcher
+│
 ├── backend/
 │   ├── app.py                        # FastAPI application server & routing endpoints
 │   ├── pipeline.py                   # Orchestrator (segmentation → classification → sizing → routing)
@@ -226,8 +215,7 @@ marbl/
 │   ├── fat_annotation_guide.md
 │   ├── BIOGENIC_AMINE_SENSOR.md
 │   ├── EXPERIMENTAL_VALIDATION_PLAN.md
-│   ├── PROJECT_TIMELINE_AND_LITERATURE.md
-│   └── images/                       # UI screenshots, system renders & diagrams
+│   └── PROJECT_TIMELINE_AND_LITERATURE.md
 │
 ├── models/
 │   └── freshness_classifier.pt       # Trained PyTorch MobileNetV2 model weights (~9 MB)

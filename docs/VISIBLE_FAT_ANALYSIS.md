@@ -93,3 +93,4 @@ $$\mathcal{L}_{\text{Dice}} = 1 - \frac{2 \sum_{i} y_i \hat{y}_i + \epsilon}{\su
 | **Marbling Class IoU** | $\ge 0.78$ | Micro-fleck IoU evaluation |
 | **Inference Latency** | $\le 45\text{ ms}$ on NVIDIA GPU | TensorRT FP16 export |
 | **Chemical Correlation ($R^2$)** | $R^2 \ge 0.92$ | Comparison with AOAC 991.36 Soxhlet Ether Extraction |
+

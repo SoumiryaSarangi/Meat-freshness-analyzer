@@ -142,3 +142,4 @@ flowchart TD
 | **DISCARD** | MobileNetV2 `spoiled` verdict OR confidence on `good` < 60% | Meat is rejected immediately. Red bounding box displayed. Product is diverted to inedible waste or rendering. |
 | **GRINDING** | Freshness is `good`, AND (longest dimension < 120 mm OR multi-piece cluster detected) | Meat is high quality but too small or irregular for retail steak trays. Routed to grinding line for mince, burgers, or sausage production. |
 | **PACKING** | Freshness is `good`, longest dimension ≥ 120 mm, and single cut | Prime cut meeting retail specifications. Routed to automated tray wrapping, vacuum skin packaging, or prime labeling. |
+

@@ -78,3 +78,4 @@ flowchart TD
   3. Solvent extraction performed using petroleum ether in a Soxhlet apparatus for 4 hours; dried to constant weight.
   4. Pearson correlation coefficient ($r$) computed between visible fat area $\%$ and chemical crude lipid $\%$.
 - **Acceptance Criteria:** Pearson correlation $r \ge 0.88$ ($p < 0.001$).
+

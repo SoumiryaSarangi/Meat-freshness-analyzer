@@ -57,3 +57,4 @@ Existing industrial inspection systems generally fall into one of two extremes:
 2. **Standard laboratory plating methods (48–72 hours)** that prevent real-time triage during receiving.
 
 Marbl synthesizes **predictive mathematical microbiology**, **lightweight deep learning (MobileNetV2)**, **optical dimensional metrology**, and **amperometric biosensing** into a unified, smartphone-accessible software suite that delivers deterministic sorting decisions in **under 400 milliseconds**.
+

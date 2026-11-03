@@ -27,5 +27,5 @@ All architectural diagrams, interface screenshots, and sensor renders are catalo
 - `ui_desktop_intake.png`: Desktop intake console with continuous $pH_u$ slider and shelf-life projection.
 - `ui_viewfinder_dropzone.jpg`: Industrial viewfinder upload interface with corner reticles.
 - `ui_classification_results.jpg`: Multi-image batch inspection cards showing single-piece and multi-piece routing.
-- `ui_mobile_view.png`: Touch-optimized handheld terminal view.
 - `sensor_strip.png`: Screen-printed electrochemical sensor strip.
+

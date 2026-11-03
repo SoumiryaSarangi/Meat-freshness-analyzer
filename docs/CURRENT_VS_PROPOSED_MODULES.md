@@ -46,3 +46,4 @@ Marbl combines operational production modules with actively researched advanced 
 ### Hardware Extension: Biogenic Amine Biosensing
 - **Current State**: Mathematical model and UI integration completed. The frontend displays the sensor status, real-time potential, current, and Amine Index, cross-referencing visual predictions against volatile nitrogen / amine accumulation.
 - **Proposed Enhancements**: Physical deployment of screen-printed carbon electrodes (SPCE) modified with Diamine Oxidase (DAO) connected to an LMP91000 analog front-end and ESP32 microcontroller over WebSerial or BLE.
+
