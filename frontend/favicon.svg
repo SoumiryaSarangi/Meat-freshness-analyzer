@@ -1,26 +1,43 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="2.5" stdDeviation="2" flood-color="#000000" flood-opacity="0.35"/>
-    </filter>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FFE07A"/>
+      <stop offset="100%" stop-color="#E5A82E"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#BD3BA6"/>
+      <stop offset="100%" stop-color="#8E207C"/>
+    </linearGradient>
+    <linearGradient id="stripGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1A201E"/>
+      <stop offset="100%" stop-color="#121614"/>
+    </linearGradient>
   </defs>
 
-  <g filter="url(#shadow)">
-    <!-- 3D Lower Thickness -->
-    <path d="M14 36 C11 43, 19 48, 25 52 C36 55, 46 51, 54 40 C54 35, 52 38, 45 44 C39 47, 29 48, 20 44 C14 40, 14 36, 14 36 Z" fill="#A83240"/>
+  <!-- Dark Obsidian Container Tile -->
+  <rect width="64" height="64" rx="16" fill="#0B0D0C"/>
+  <rect x="0.9" y="0.9" width="62.2" height="62.2" rx="15.1" fill="none" stroke="#242927" stroke-width="1.8"/>
 
-    <!-- Outer Fat Layer (Smooth Cream) -->
-    <path d="M23 14 C31 11, 43 11, 52 18 C55 24, 55 33, 48 42 C42 48, 30 51, 19 48 C11 43, 9 28, 14 19 C16 16, 19 15, 23 14 Z" fill="#FFF4DE" stroke="#F5E6CC" stroke-width="0.8"/>
+  <!-- Frosted Biosensor Strip Substrate -->
+  <rect x="5" y="14" width="54" height="36" rx="7" fill="url(#stripGrad)" stroke="#2E3633" stroke-width="1.4"/>
 
-    <!-- Main Meat Cutlet Face -->
-    <path d="M24 17.5 C31 14.5, 41 14.5, 48 20.5 C51 25.5, 51 31.5, 45 39 C39 44.5, 29 47, 20 44.5 C14 40, 12 28, 16.5 21 C18 19, 21 18, 24 17.5 Z" fill="#E83D56"/>
+  <!-- 3 Gold Electrode Contact Pads -->
+  <rect x="8.5" y="19.5" width="11" height="6" rx="1.5" fill="url(#goldGrad)" stroke="#FFE07A" stroke-width="0.6"/>
+  <rect x="8.5" y="28.7" width="11" height="6" rx="1.5" fill="url(#goldGrad)" stroke="#FFE07A" stroke-width="0.6"/>
+  <rect x="8.5" y="37.9" width="11" height="6" rx="1.5" fill="url(#goldGrad)" stroke="#FFE07A" stroke-width="0.6"/>
 
-    <!-- Marbling Branches -->
-    <path d="M36 24 C30 30, 19 35, 19 35" stroke="#FFF4DE" stroke-width="3.2" stroke-linecap="round" fill="none"/>
-    <path d="M36 24 C38 33, 34 43, 34 43" stroke="#FFF4DE" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+  <!-- Gold Micro-Circuit Traces (45-degree precision routing) -->
+  <path d="M 19.5 22.5 L 29 22.5 L 34.5 28 L 41 28" fill="none" stroke="url(#goldGrad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 19.5 32 L 41 32" fill="none" stroke="url(#goldGrad)" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M 19.5 41.5 L 29 41.5 L 34.5 36 L 41 36" fill="none" stroke="url(#goldGrad)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
 
-    <!-- Bone (White with Dark Marrow Core) -->
-    <circle cx="36" cy="23" r="6" fill="#FFF4DE"/>
-    <circle cx="36" cy="23" r="2.5" fill="#5A1620"/>
-  </g>
+  <!-- Circular Reaction Well & Electrodes -->
+  <!-- Outer Gold Bezel -->
+  <circle cx="45.5" cy="32" r="13" fill="#F0BC35" stroke="#FFE58F" stroke-width="1.2"/>
+  <!-- Middle Frosted Isolation Ring -->
+  <circle cx="45.5" cy="32" r="10.8" fill="#F5F6F0" stroke="#D6A020" stroke-width="0.8"/>
+  <!-- Active Biogenic Amine Enzyme Core (Purple) -->
+  <circle cx="45.5" cy="32" r="9.2" fill="url(#purpleGrad)"/>
+  <!-- Radiant Core Glow -->
+  <circle cx="45.5" cy="32" r="6" fill="#BD3BA6" opacity="0.85"/>
 </svg>
